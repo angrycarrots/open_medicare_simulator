@@ -1,0 +1,23 @@
+# Cursor Rules for Open Medicare Simulator
+
+## Testing Requirements
+- Always run tests prior to adding files to the repository
+- Use `uv run pytest` to execute the test suite
+- Ensure all tests pass before staging files with `git add`
+- If tests fail, fix the issues before proceeding with git operations
+
+## Code Quality
+- Use `python -m py_compile` to check for syntax errors after making changes
+- Follow Python best practices and PEP 8 style guidelines
+- Ensure proper error handling and input validation
+
+## Development Environment
+- Use `uv` for virtual environment management (not pip)
+- Activate the virtual environment with `.venv` before running commands
+- Use `uv run` prefix for commands that need the virtual environment
+
+## Git Workflow
+- Never run `git commit` commands unless specifically requested
+- Do not commit changes without explicit user confirmation
+- Only make code changes and wait for permission to commit
+- Always run tests and syntax checks before staging files

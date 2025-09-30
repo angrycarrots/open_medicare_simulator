@@ -1,0 +1,42 @@
+[project]
+name = "medigap"
+version = "0.1.0"
+description = "Monte Carlo simulation of Medicare/Medigap costs over 25 years"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=1.24.0",
+    "matplotlib>=3.7.0",
+    "streamlit>=1.28.0",
+    "plotly>=5.15.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=src/medigap --cov-report=html --cov-report=term-missing"
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
