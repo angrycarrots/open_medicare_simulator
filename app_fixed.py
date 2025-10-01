@@ -65,17 +65,17 @@ def create_parameter_inputs() -> SimulationParameters:
     medigap_premium_growth_rate = st.sidebar.slider(
         "Medigap Premium Growth Rate",
         min_value=0.0,
-        max_value=0.15,
+        max_value=0.20,
         value=0.07,
         step=0.01,
-        format="%.1%",
+        # format="%.1%",
         help="Annual growth rate for Medigap premium"
     )
     
     plan_deductible_growth_rate = st.sidebar.slider(
         "Plan Deductible Growth Rate",
         min_value=0.0,
-        max_value=0.15,
+        max_value=0.20,
         value=0.06,
         step=0.01,
         # format="%.1%",
@@ -85,7 +85,7 @@ def create_parameter_inputs() -> SimulationParameters:
     part_d_premium_growth_rate = st.sidebar.slider(
         "Part D Premium Growth Rate",
         min_value=0.0,
-        max_value=0.15,
+        max_value=0.20,
         value=0.06,
         step=0.01,
         # format="%.1%",
@@ -95,7 +95,7 @@ def create_parameter_inputs() -> SimulationParameters:
     part_b_deductible_growth_rate = st.sidebar.slider(
         "Part B Deductible Growth Rate",
         min_value=0.0,
-        max_value=0.15,
+        max_value=0.20,
         value=0.06,
         step=0.01,
         # format="%.1%",
@@ -106,7 +106,7 @@ def create_parameter_inputs() -> SimulationParameters:
     st.sidebar.subheader("⚙️ Simulation Setting")
     
     percent_sick = st.sidebar.slider(
-        "Probability of Full Utilization",
+        "Percent Sick",
         min_value=0.0,
         max_value=1.0,
         value=0.20,
@@ -115,9 +115,18 @@ def create_parameter_inputs() -> SimulationParameters:
         help="Probability of being 'sick' (full utilization) in any given year"
     )
     
-    simulation_years = st.sidebar.slider(
+    num_simulations = st.sidebar.number_input(
+        "Number of Simulations",
+        min_value=100,
+        max_value=10000,
+        value=1000,
+        step=100,
+        help="Number of Monte Carlo simulations to run"
+    )
+    
+    simulation_years = st.sidebar.number_input(
         "Simulation Years",
-        min_value=5,
+        min_value=10,
         max_value=50,
         value=25,
         step=5,
@@ -133,14 +142,6 @@ def create_parameter_inputs() -> SimulationParameters:
         help="Starting year for simulation"
     )
     
-    # Number of simulations
-    num_simulations = st.sidebar.selectbox(
-        "Number of Simulations",
-        options=[100, 500, 1000, 2000, 5000],
-        index=2,
-        help="Number of Monte Carlo simulations to run"
-    )
-    
     return SimulationParameters(
         medigap_premium_2026=medigap_premium_2026,
         medigap_premium_growth_rate=medigap_premium_growth_rate,
@@ -153,52 +154,75 @@ def create_parameter_inputs() -> SimulationParameters:
         percent_sick=percent_sick,
         simulation_years=simulation_years,
         start_year=start_year
-    ), num_simulations
+    )
 
 
-def display_cost_breakdown(params: SimulationParameters) -> None:
-    """Display detailed cost breakdown table."""
-    st.subheader("📋 Year-by-Year Cost Breakdown")
+def display_parameter_summary(params: SimulationParameters):
+    """Display a summary of the simulation parameters."""
+    st.subheader("📋 Simulation Parameters Summary")
     
-    # Create cost breakdown data
-    years = list(range(params.start_year, params.start_year + params.simulation_years))
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**Base Costs (2026):**")
+        st.write(f"• Medigap Premium: ${params.medigap_premium_2026:.2f}/month")
+        st.write(f"• Plan Deductible: ${params.plan_deductible_2026:.2f}/year")
+        st.write(f"• Part D Premium: ${params.part_d_premium_2026:.2f}/month")
+        st.write(f"• Part B Deductible: ${params.part_b_deductible_2026:.2f}/year")
+    
+    with col2:
+        st.markdown("**Growth Rates:**")
+        st.write(f"• Medigap Premium: {params.medigap_premium_growth_rate:.1%}")
+        st.write(f"• Plan Deductible: {params.plan_deductible_growth_rate:.1%}")
+        st.write(f"• Part D Premium: {params.part_d_premium_growth_rate:.1%}")
+        st.write(f"• Part B Deductible: {params.part_b_deductible_growth_rate:.1%}")
+    
+    st.markdown("**Simulation Settings:**")
+    st.write(f"• Percent Sick: {params.percent_sick:.1%}")
+    st.write(f"• Simulation Years: {params.simulation_years}")
+    st.write(f"• Start Year: {params.start_year}")
+
+
+def create_cost_projection_table(params: SimulationParameters, years_to_show=5):
+    """Create a table showing cost projections for the first few years."""
+    st.subheader("📊 Cost Projections by Year")
+    
+    from medigap.simulation.cost_calculator import CostCalculator
+    calculator = CostCalculator(params)
+    
     data = []
-    
-    for year_num, year in enumerate(years):
-        # Calculate individual components
-        medigap_monthly = params.medigap_premium_2026 * (1 + params.medigap_premium_growth_rate) ** year_num
-        medigap_annual = medigap_monthly * 12
+    for year in range(min(years_to_show, params.simulation_years)):
+        actual_year = params.start_year + year
         
-        plan_deductible = params.plan_deductible_2026 * (1 + params.plan_deductible_growth_rate) ** year_num
+        # Calculate costs for this year
+        medigap_premium = calculator.calculate_medigap_premium(year)
+        plan_deductible = calculator.calculate_plan_deductible(year)
+        part_d_premium = calculator.calculate_part_d_premium(year)
+        part_b_deductible = calculator.calculate_part_b_deductible(year)
         
-        part_d_monthly = params.part_d_premium_2026 * (1 + params.part_d_premium_growth_rate) ** year_num
-        part_d_annual = part_d_monthly * 12
-        
-        part_b_deductible = params.part_b_deductible_2026 * (1 + params.part_b_deductible_growth_rate) ** year_num
-        
-        # Total annual cost (premiums + deductibles)
-        total_annual = medigap_annual + part_d_annual + plan_deductible + part_b_deductible
+        # Calculate total costs
+        total_premiums = (medigap_premium + part_d_premium) * 12
+        total_deductibles = plan_deductible + part_b_deductible
+        total_annual = total_premiums + total_deductibles
         
         data.append({
-            'Year': year,
-            'Medigap Monthly': f"${medigap_monthly:,.2f}",
-            'Medigap Annual': f"${medigap_annual:,.2f}",
-            'Plan Deductible': f"${plan_deductible:,.2f}",
-            'Part D Monthly': f"${part_d_monthly:,.2f}",
-            'Part D Annual': f"${part_d_annual:,.2f}",
-            'Part B Deductible': f"${part_b_deductible:,.2f}",
+            'Year': actual_year,
+            'Medigap Premium': f"${medigap_premium:.2f}",
+            'Plan Deductible': f"${plan_deductible:.2f}",
+            'Part D Premium': f"${part_d_premium:.2f}",
+            'Part B Deductible': f"${part_b_deductible:.2f}",
             'Total Annual': f"${total_annual:,.2f}"
         })
     
     df = pd.DataFrame(data)
-    st.dataframe(df, width='stretch')
+    st.dataframe(df, use_container_width=True)
 
 
 def create_cost_projection_chart(years: list, mean_costs: list, std_costs: list) -> go.Figure:
     """Create cost projection chart with confidence intervals."""
     fig = go.Figure()
     
-    # Add mean line
+    # Add mean cost line
     fig.add_trace(go.Scatter(
         x=years,
         y=mean_costs,
@@ -208,22 +232,22 @@ def create_cost_projection_chart(years: list, mean_costs: list, std_costs: list)
         marker=dict(size=6)
     ))
     
-    # Add confidence interval (mean ± std)
+    # Add confidence interval
     upper_bound = [mean + std for mean, std in zip(mean_costs, std_costs)]
     lower_bound = [mean - std for mean, std in zip(mean_costs, std_costs)]
     
     fig.add_trace(go.Scatter(
         x=years + years[::-1],
         y=upper_bound + lower_bound[::-1],
-        fill='tonexty',
+        fill='toself',
         fillcolor='rgba(0,100,80,0.2)',
         line=dict(color='rgba(255,255,255,0)'),
         name='±1 Standard Deviation',
-        hoverinfo="skip"
+        showlegend=True
     ))
     
     fig.update_layout(
-        title='Medicare/Medigap Cost Projections Over Time',
+        title='Annual Cost Projections',
         xaxis_title='Year',
         yaxis_title='Annual Cost ($)',
         hovermode='x unified',
@@ -234,30 +258,19 @@ def create_cost_projection_chart(years: list, mean_costs: list, std_costs: list)
 
 
 def create_lifetime_cost_histogram(lifetime_costs: list) -> go.Figure:
-    """Create lifetime cost distribution histogram."""
-    fig = go.Figure()
-    
-    fig.add_trace(go.Histogram(
-        x=lifetime_costs,
-        nbinsx=50,
-        name='Lifetime Cost Distribution',
-        marker_color='lightblue',
-        opacity=0.7
-    ))
-    
-    # Add mean line
-    mean_cost = np.mean(lifetime_costs)
-    fig.add_vline(
-        x=mean_cost,
-        line_dash="dash",
-        line_color="red",
-        annotation_text=f"Mean: ${mean_cost:,.0f}",
-        annotation_position="top"
-    )
+    """Create histogram of lifetime costs."""
+    fig = go.Figure(data=[
+        go.Histogram(
+            x=lifetime_costs,
+            nbinsx=50,
+            marker_color='lightblue',
+            marker_line=dict(color='black', width=1)
+        )
+    ])
     
     fig.update_layout(
-        title='Distribution of Total Lifetime Costs',
-        xaxis_title='Total Lifetime Cost ($)',
+        title='Lifetime Cost Distribution',
+        xaxis_title='Lifetime Cost ($)',
         yaxis_title='Frequency',
         template='plotly_white'
     )
@@ -265,63 +278,64 @@ def create_lifetime_cost_histogram(lifetime_costs: list) -> go.Figure:
     return fig
 
 
-def display_simulation_results(results: Dict[str, Any]) -> None:
-    """Display comprehensive simulation results."""
-    st.subheader("📊 Simulation Results")
+def run_simulation_and_display_results(params: SimulationParameters, num_simulations: int):
+    """Run Monte Carlo simulation and display results."""
+    st.subheader("🎲 Monte Carlo Simulation Results")
     
-    # Calculate key statistics
+    # Create simulation
+    simulation = MonteCarloSimulation(params)
+    
+    # Run simulation
+    with st.spinner(f"Running {num_simulations} simulations..."):
+        results = simulation.run_comprehensive_simulation(num_simulations)
+    
+    # Extract results
     lifetime_costs = results['lifetime_costs']
-    mean_lifetime = np.mean(lifetime_costs)
-    min_lifetime = np.min(lifetime_costs)
-    max_lifetime = np.max(lifetime_costs)
-    median_lifetime = np.median(lifetime_costs)
-    std_lifetime = np.std(lifetime_costs)
+    statistics = results['statistics']
     
-    # Display key metrics
+    # Display summary statistics
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
         st.metric(
-            label="Mean Lifetime Cost",
-            value=f"${mean_lifetime:,.0f}",
-            delta=f"±${std_lifetime:,.0f}"
+            "Mean Lifetime Cost",
+            f"${np.mean(lifetime_costs):,.0f}"
         )
     
     with col2:
         st.metric(
-            label="Median Lifetime Cost",
-            value=f"${median_lifetime:,.0f}"
+            "Standard Deviation",
+            f"${np.std(lifetime_costs):,.0f}"
         )
     
     with col3:
         st.metric(
-            label="Minimum Lifetime Cost",
-            value=f"${min_lifetime:,.0f}"
+            "Minimum Cost",
+            f"${np.min(lifetime_costs):,.0f}"
         )
     
     with col4:
         st.metric(
-            label="Maximum Lifetime Cost",
-            value=f"${max_lifetime:,.0f}"
+            "Maximum Cost",
+            f"${np.max(lifetime_costs):,.0f}"
         )
     
-    # Create charts
-    years = list(range(results['parameters']['start_year'], 
-                      results['parameters']['start_year'] + results['parameters']['simulation_years']))
+    # Create years list for charts
+    years = list(range(params.start_year, params.start_year + params.simulation_years))
     
     # Cost projection chart
-    st.subheader("📈 Cost Projections Over Time")
+    st.subheader("📈 Annual Cost Projections")
     cost_chart = create_cost_projection_chart(
         years, 
         results['statistics']['mean_costs'], 
         results['statistics']['std_costs']
     )
-    st.plotly_chart(cost_chart, width='stretch')
+    st.plotly_chart(cost_chart, use_container_width=True)
     
     # Lifetime cost histogram
     st.subheader("📊 Lifetime Cost Distribution")
     hist_chart = create_lifetime_cost_histogram(lifetime_costs)
-    st.plotly_chart(hist_chart, width='stretch')
+    st.plotly_chart(hist_chart, use_container_width=True)
     
     # Percentile analysis
     st.subheader("📊 Cost Percentiles")
@@ -334,85 +348,41 @@ def display_simulation_results(results: Dict[str, Any]) -> None:
     }
     
     percentile_df = pd.DataFrame(percentile_data)
-    st.dataframe(percentile_df, width='stretch')
+    st.dataframe(percentile_df, use_container_width=True)
 
 
 def main():
     """Main Streamlit application."""
     st.set_page_config(
-        page_title="Medicare/Medigap Cost Simulator",
+        page_title="Medicare Plan Simulator",
         page_icon="🏥",
-        layout="wide",
-        initial_sidebar_state="expanded"
+        layout="wide"
     )
     
-    # Header
-    st.title("🏥 Medicare/Medigap Cost Simulator")
-    st.markdown("""
-    This application uses Monte Carlo simulation to project Medicare and Medigap costs over time.
-    Adjust the parameters in the sidebar to explore different scenarios and see how they affect
-    your long-term healthcare costs.
-    """)
+    st.title("🏥 Medicare Plan Monte Carlo Simulator")
+    st.markdown("Project Medicare costs over time using Monte Carlo simulation.")
     
-    # Create parameter inputs
-    params, num_simulations = create_parameter_inputs()
+    # Create parameter input interface
+    params = create_parameter_inputs()
+    
+    # Display parameter summary
+    display_parameter_summary(params)
+    
+    # Create cost projection table
+    create_cost_projection_table(params)
     
     # Run simulation button
-    if st.sidebar.button("🚀 Run Simulation", type="primary"):
-        with st.spinner(f"Running {num_simulations:,} Monte Carlo simulations..."):
-            # Create simulation engine
-            simulation = MonteCarloSimulation(params)
-            
-            # Run comprehensive simulation
-            results = simulation.run_comprehensive_simulation(num_simulations)
-            
-            # Store results in session state
-            st.session_state.simulation_results = results
-    
-    # Display results if available
-    if 'simulation_results' in st.session_state:
-        results = st.session_state.simulation_results
-        
-        # Display cost breakdown
-        display_cost_breakdown(params)
-        
-        st.divider()
-        
-        # Display simulation results
-        display_simulation_results(results)
-        
-        # Download results
-        st.subheader("💾 Download Results")
-        
-        # Create downloadable data
-        years = list(range(params.start_year, params.start_year + params.simulation_years))
-        results_data = {
-            'Year': years,
-            'Mean_Cost': results['statistics']['mean_costs'],
-            'Std_Cost': results['statistics']['std_costs'],
-            'Min_Cost': results['statistics']['min_costs'],
-            'Max_Cost': results['statistics']['max_costs']
-        }
-        
-        results_df = pd.DataFrame(results_data)
-        csv = results_df.to_csv(index=False)
-        
-        st.download_button(
-            label="📥 Download Cost Projections (CSV)",
-            data=csv,
-            file_name=f"medicare_cost_projections_{params.start_year}_{params.start_year + params.simulation_years - 1}.csv",
-            mime="text/csv"
-        )
+    if st.button("🚀 Run Monte Carlo Simulation", type="primary"):
+        run_simulation_and_display_results(params, params.simulation_years)
     
     # Footer
-    st.divider()
-    st.markdown("""
-    **About this simulation:**
-    - Uses Monte Carlo methods to account for uncertainty in healthcare utilization
-    - Projects costs based on current Medicare/Medigap pricing and growth rates
-    - Results are for informational purposes only and should not be considered financial advice
-    """)
+    st.markdown("---")
+    st.markdown(
+        "**Note:** This simulation is for educational purposes only. "
+        "Actual Medicare costs may vary based on location, health status, and other factors."
+    )
 
 
 if __name__ == "__main__":
     main()
+
