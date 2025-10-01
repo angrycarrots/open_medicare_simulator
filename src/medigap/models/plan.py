@@ -24,7 +24,11 @@ class Plan(ABC):
         part_b_deductible_growth_rate: float = 0.06,
         percent_sick: float = 0.20,
         simulation_years: int = 25,
-        start_year: int = 2026
+        start_year: int = 2026,
+        # Specialist visit parameters (optional, defaults to None for plans without specialist visits)
+        specialist_visits_per_year: Optional[int] = None,
+        specialist_copay_2026: Optional[float] = None,
+        specialist_copay_growth_rate: Optional[float] = None
     ) -> None:
         """Initialize plan parameters with validation.
         
@@ -41,6 +45,9 @@ class Plan(ABC):
             percent_sick: Probability of full utilization (0-1)
             simulation_years: Number of years to simulate
             start_year: Starting year for simulation
+            specialist_visits_per_year: Number of specialist visits per year (optional)
+            specialist_copay_2026: Base specialist copay for 2026 (optional)
+            specialist_copay_growth_rate: Annual growth rate for specialist copay (optional)
             
         Raises:
             ValueError: If any parameter is invalid
@@ -50,7 +57,8 @@ class Plan(ABC):
             plan_deductible_2026, plan_deductible_growth_rate,
             part_d_premium_2026, part_d_premium_growth_rate,
             part_b_deductible_2026, part_b_deductible_growth_rate,
-            percent_sick, simulation_years, start_year
+            percent_sick, simulation_years, start_year,
+            specialist_visits_per_year, specialist_copay_2026, specialist_copay_growth_rate
         )
         
         self.name = name
@@ -65,6 +73,10 @@ class Plan(ABC):
         self.percent_sick = percent_sick
         self.simulation_years = simulation_years
         self.start_year = start_year
+        # Specialist visit parameters
+        self.specialist_visits_per_year = specialist_visits_per_year
+        self.specialist_copay_2026 = specialist_copay_2026
+        self.specialist_copay_growth_rate = specialist_copay_growth_rate
 
     def _validate_parameters(
         self,
@@ -78,7 +90,10 @@ class Plan(ABC):
         part_b_deductible_growth_rate: float,
         percent_sick: float,
         simulation_years: int,
-        start_year: int
+        start_year: int,
+        specialist_visits_per_year: Optional[int],
+        specialist_copay_2026: Optional[float],
+        specialist_copay_growth_rate: Optional[float]
     ) -> None:
         """Validate all plan parameters.
         
@@ -119,6 +134,25 @@ class Plan(ABC):
         # Validate start_year (must be positive)
         if start_year <= 0:
             raise ValueError("Start year must be positive")
+        
+        # Validate specialist visit parameters (if provided)
+        if specialist_visits_per_year is not None:
+            if specialist_visits_per_year < 0:
+                raise ValueError("Specialist visits per year must be non-negative")
+        
+        if specialist_copay_2026 is not None:
+            if specialist_copay_2026 < 0:
+                raise ValueError("Specialist copay must be non-negative")
+        
+        if specialist_copay_growth_rate is not None:
+            if specialist_copay_growth_rate < 0:
+                raise ValueError("Specialist copay growth rate must be non-negative")
+        
+        # If any specialist parameter is provided, all must be provided
+        specialist_params = [specialist_visits_per_year, specialist_copay_2026, specialist_copay_growth_rate]
+        if any(param is not None for param in specialist_params):
+            if any(param is None for param in specialist_params):
+                raise ValueError("If specialist visit parameters are provided, all must be provided")
 
     def calculate_premium(self, year: int) -> float:
         """Calculate premium for a given year.
@@ -188,6 +222,41 @@ class Plan(ABC):
         
         return self.part_b_deductible_2026 * (1 + self.part_b_deductible_growth_rate) ** year
 
+    def calculate_specialist_copay(self, year: int) -> float:
+        """Calculate specialist copay for a given year.
+        
+        Args:
+            year: Year offset from start year (0 = start year)
+            
+        Returns:
+            Specialist copay per visit for the specified year
+            
+        Raises:
+            ValueError: If year is negative or specialist parameters not set
+        """
+        if year < 0:
+            raise ValueError("Year must be non-negative")
+        
+        if self.specialist_copay_2026 is None or self.specialist_copay_growth_rate is None:
+            return 0.0
+        
+        return self.specialist_copay_2026 * (1 + self.specialist_copay_growth_rate) ** year
+
+    def calculate_annual_specialist_costs(self, year: int) -> float:
+        """Calculate annual specialist visit costs for a given year.
+        
+        Args:
+            year: Year offset from start year (0 = start year)
+            
+        Returns:
+            Total annual specialist visit costs for the specified year
+        """
+        if self.specialist_visits_per_year is None:
+            return 0.0
+        
+        copay_per_visit = self.calculate_specialist_copay(year)
+        return self.specialist_visits_per_year * copay_per_visit
+
     def calculate_total_premiums(self, year: int) -> float:
         """Calculate total premiums (Plan + Part D) for a given year.
         
@@ -220,15 +289,16 @@ class Plan(ABC):
             is_sick: Whether the person is sick (full utilization)
             
         Returns:
-            Total annual costs including premiums and deductibles (if sick)
+            Total annual costs including premiums, deductibles (if sick), and specialist visits
         """
         total_premiums = self.calculate_total_premiums(year)
+        specialist_costs = self.calculate_annual_specialist_costs(year)
         
         if is_sick:
             total_deductibles = self.calculate_total_deductibles(year)
-            return total_premiums + total_deductibles
+            return total_premiums + total_deductibles + specialist_costs
         else:
-            return total_premiums
+            return total_premiums + specialist_costs
 
     def __str__(self) -> str:
         """Return string representation of the plan."""
@@ -241,4 +311,5 @@ class Plan(ABC):
                 f"premium_growth_rate={self.premium_growth_rate}, "
                 f"plan_deductible_2026={self.plan_deductible_2026}, "
                 f"plan_deductible_growth_rate={self.plan_deductible_growth_rate})")
+
 
