@@ -5,6 +5,8 @@ export interface SimulationParameters {
   planDeductibleGrowthRate: number;
   partDPremium2026: number;
   partDPremiumGrowthRate: number;
+  partADeductible2026: number;
+  partADeductibleGrowthRate: number;
   partBDeductible2026: number;
   partBDeductibleGrowthRate: number;
   percentSick: number;
@@ -21,6 +23,8 @@ export interface PlanDefinition {
   planDeductibleGrowthRate: number;
   partDPremium2026: number;
   partDPremiumGrowthRate: number;
+  partADeductible2026?: number;
+  partADeductibleGrowthRate?: number;
   partBDeductible2026: number;
   partBDeductibleGrowthRate: number;
   percentSick: number;

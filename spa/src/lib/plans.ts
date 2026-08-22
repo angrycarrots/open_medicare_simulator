@@ -14,13 +14,15 @@ export interface PlanCostSettings {
 export type PlanCostSettingsById = Record<PlanChoice, PlanCostSettings>;
 
 export const DEFAULT_SIMULATION_PARAMETERS: SimulationParameters = {
-  medigapPremium2026: 155,
+  medigapPremium2026: 157,
   medigapPremiumGrowthRate: 0.07,
-  planDeductible2026: 257,
+  planDeductible2026: 0,
   planDeductibleGrowthRate: 0.06,
   partDPremium2026: 49,
   partDPremiumGrowthRate: 0.06,
-  partBDeductible2026: 210,
+  partADeductible2026: 1736,
+  partADeductibleGrowthRate: 0.06,
+  partBDeductible2026: 283,
   partBDeductibleGrowthRate: 0.06,
   percentSick: 0.2,
   simulationYears: 25,
@@ -37,6 +39,8 @@ export function fullSimulatorPlan(parameters: SimulationParameters): PlanDefinit
     planDeductibleGrowthRate: parameters.planDeductibleGrowthRate,
     partDPremium2026: parameters.partDPremium2026,
     partDPremiumGrowthRate: parameters.partDPremiumGrowthRate,
+    partADeductible2026: parameters.partADeductible2026,
+    partADeductibleGrowthRate: parameters.partADeductibleGrowthRate,
     partBDeductible2026: parameters.partBDeductible2026,
     partBDeductibleGrowthRate: parameters.partBDeductibleGrowthRate,
     percentSick: parameters.percentSick,
@@ -49,19 +53,19 @@ export function createPlanG(overrides: Partial<PlanDefinition> = {}): PlanDefini
   return {
     id: "plan-g",
     name: "Plan G",
-    premium2026: 155,
+    premium2026: 157,
     premiumGrowthRate: 0.07,
-    planDeductible2026: 257,
+    planDeductible2026: 0,
     planDeductibleGrowthRate: 0.06,
     partDPremium2026: 49,
     partDPremiumGrowthRate: 0.06,
-    partBDeductible2026: 210,
+    partBDeductible2026: 283,
     partBDeductibleGrowthRate: 0.06,
     percentSick: 0.2,
     simulationYears: 25,
     startYear: CURRENT_YEAR,
     specialistVisitsPerYear: 12,
-    specialistCopay2026: 20,
+    specialistCopay2026: 0,
     specialistCopayGrowthRate: 0.07,
     ...overrides,
   };
@@ -72,8 +76,9 @@ export function createPlanHDG(overrides: Partial<PlanDefinition> = {}): PlanDefi
     ...createPlanG(),
     id: "plan-hdg",
     name: "High Deductible Plan G",
-    premium2026: 40,
-    planDeductible2026: 2800,
+    premium2026: 70,
+    planDeductible2026: 2875,
+    specialistCopay2026: 20,
     ...overrides,
   };
 }
@@ -83,7 +88,8 @@ export function createPlanN(overrides: Partial<PlanDefinition> = {}): PlanDefini
     ...createPlanG(),
     id: "plan-n",
     name: "Plan N",
-    premium2026: 118,
+    premium2026: 122,
+    planDeductible2026: 0,
     specialistVisitsPerYear: 12,
     specialistCopay2026: 20,
     specialistCopayGrowthRate: 0.07,
@@ -117,7 +123,7 @@ export const DEFAULT_PLAN_COST_SETTINGS: PlanCostSettingsById = {
   custom: costSettings(createCustomPlan()),
 };
 
-export const PLAN_COST_SETTINGS_STORAGE_KEY = "medicare-simulator.plan-costs.v1";
+export const PLAN_COST_SETTINGS_STORAGE_KEY = "medicare-simulator.plan-costs.v3";
 
 export function withPlanCostSettings(plan: PlanDefinition, settings: PlanCostSettings): PlanDefinition {
   return {

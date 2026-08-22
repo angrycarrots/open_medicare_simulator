@@ -1,7 +1,7 @@
 import { HashRouter, NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { ComparisonPage } from "./pages/ComparisonPage";
 import { FullSimulatorPage } from "./pages/FullSimulatorPage";
-import { SinglePlanPage } from "./pages/SinglePlanPage";
+import { PlanPage } from "./pages/PlanPage";
 
 export default function App() {
   return (
@@ -13,9 +13,11 @@ export default function App() {
             <span>Medicare Cost Simulator</span>
           </NavLink>
           <nav aria-label="Primary navigation">
-            <NavLink to="/full">Full simulator</NavLink>
-            <NavLink to="/single-plan">Single plan</NavLink>
+            <NavLink to="/plan-g">Plan G</NavLink>
+            <NavLink to="/plan-g-hd">Plan G HD</NavLink>
+            <NavLink to="/plan-n">Plan N</NavLink>
             <NavLink to="/comparison">Compare plans</NavLink>
+            <NavLink to="/full">Full simulator</NavLink>
             <a
               className="coffee-link"
               href="https://ko-fi.com/A0A71KJNT6"
@@ -32,7 +34,10 @@ export default function App() {
         </header>
         <Routes>
           <Route path="/full" element={<FullSimulatorPage />} />
-          <Route path="/single-plan" element={<SinglePlanPage />} />
+          <Route path="/plan-g" element={<PlanPage key="plan-g" planId="plan-g" />} />
+          <Route path="/plan-g-hd" element={<PlanPage key="plan-hdg" planId="plan-hdg" />} />
+          <Route path="/plan-n" element={<PlanPage key="plan-n" planId="plan-n" />} />
+          <Route path="/single-plan" element={<Navigate to="/plan-g" replace />} />
           <Route path="/comparison" element={<ComparisonPage />} />
           <Route path="*" element={<Navigate to="/full" replace />} />
         </Routes>

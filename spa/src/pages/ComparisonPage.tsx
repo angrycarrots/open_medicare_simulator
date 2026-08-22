@@ -15,6 +15,7 @@ import {
   type PredefinedPlanChoice,
 } from "../lib/plans";
 import { annualCost } from "../lib/simulation";
+import { useSimulationSettings } from "../hooks/useSimulationSettings";
 import { useSimulationWorker } from "../hooks/useSimulationWorker";
 import { usePersistentState } from "../hooks/usePersistentState";
 import type { ComparisonResult, PlanDefinition } from "../types";
@@ -25,25 +26,26 @@ const currentYear = new Date().getFullYear();
 export function ComparisonPage() {
   const [firstChoice, setFirstChoice] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.comparison.first-plan.v1", "plan-g");
   const [secondChoice, setSecondChoice] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.comparison.second-plan.v1", "plan-hdg");
-  const [percentSick, setPercentSick] = usePersistentState("medicare-simulator.comparison.utilization.v1", 0.2);
-  const [numSimulations, setNumSimulations] = usePersistentState("medicare-simulator.comparison.simulations.v1", 2500);
-  const [simulationYears, setSimulationYears] = usePersistentState("medicare-simulator.comparison.years.v1", 25);
-  const [startYear, setStartYear] = usePersistentState("medicare-simulator.comparison.start-year.v1", currentYear);
+  const { settings: simulationSettings, updateSetting } = useSimulationSettings();
   const [planCostSettings] = usePersistentState<PlanCostSettingsById>(PLAN_COST_SETTINGS_STORAGE_KEY, DEFAULT_PLAN_COST_SETTINGS);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const worker = useSimulationWorker();
   const plans = useMemo(() => ({
-    first: makePlan(firstChoice, planCostSettings[firstChoice], percentSick, simulationYears, startYear),
-    second: makePlan(secondChoice, planCostSettings[secondChoice], percentSick, simulationYears, startYear),
-  }), [firstChoice, secondChoice, planCostSettings, percentSick, simulationYears, startYear]);
+    first: makePlan(firstChoice, planCostSettings[firstChoice], simulationSettings.percentSick, simulationSettings.simulationYears, simulationSettings.startYear),
+    second: makePlan(secondChoice, planCostSettings[secondChoice], simulationSettings.percentSick, simulationSettings.simulationYears, simulationSettings.startYear),
+  }), [firstChoice, secondChoice, planCostSettings, simulationSettings]);
   const run = async () => {
     try {
-      setResult(await worker.runComparison({ plan1: plans.first, plan2: plans.second, numSimulations }));
+      setResult(await worker.runComparison({ plan1: plans.first, plan2: plans.second, numSimulations: simulationSettings.numSimulations }));
     } catch {
       // The worker hook displays the user-facing error.
     }
   };
-  const stale = result !== null && (JSON.stringify(plans.first) !== JSON.stringify(result.plan1.plan) || JSON.stringify(plans.second) !== JSON.stringify(result.plan2.plan));
+  const stale = result !== null && (
+    JSON.stringify(plans.first) !== JSON.stringify(result.plan1.plan)
+    || JSON.stringify(plans.second) !== JSON.stringify(result.plan2.plan)
+    || simulationSettings.numSimulations !== result.plan1.numSimulations
+  );
 
   return <PageLayout title="Plan comparison" lead="Compare Medicare plan trade-offs side by side, from first-year costs to the full distribution of simulated lifetime expenses.">
     <section className="workspace">
@@ -51,12 +53,12 @@ export function ComparisonPage() {
         <h2>Compare plans</h2>
         <label className="field" htmlFor="first-plan"><span>Plan 1</span><PlanSelect id="first-plan" value={firstChoice} onChange={setFirstChoice} /></label>
         <label className="field" htmlFor="second-plan"><span>Plan 2</span><PlanSelect id="second-plan" value={secondChoice} onChange={setSecondChoice} /></label>
-        <p className="settings-note">Plan costs use the values saved on the Single Plan page.</p>
+        <p className="settings-note">Each plan uses the parameters saved on its own plan page.</p>
         <FieldGroup title="Shared simulation settings">
-          <RangeField id="comparison-utilization" label="Probability of full utilization" value={percentSick} onChange={setPercentSick} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
-          <NumberField id="comparison-simulations" label="Number of simulations" value={numSimulations} onChange={setNumSimulations} min={100} max={10000} step={100} />
-          <NumberField id="comparison-years" label="Simulation years" value={simulationYears} onChange={setSimulationYears} min={10} max={50} step={5} />
-          <NumberField id="comparison-start" label="Start year" value={startYear} onChange={setStartYear} min={currentYear - 10} max={currentYear + 10} />
+          <RangeField id="comparison-utilization" label="Probability of full utilization" value={simulationSettings.percentSick} onChange={(value) => updateSetting("percentSick", value)} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
+          <NumberField id="comparison-simulations" label="Number of simulations" value={simulationSettings.numSimulations} onChange={(value) => updateSetting("numSimulations", value)} min={100} max={10000} step={100} />
+          <NumberField id="comparison-years" label="Simulation years" value={simulationSettings.simulationYears} onChange={(value) => updateSetting("simulationYears", value)} min={10} max={50} step={5} />
+          <NumberField id="comparison-start" label="Start year" value={simulationSettings.startYear} onChange={(value) => updateSetting("startYear", value)} min={currentYear - 10} max={currentYear + 10} />
         </FieldGroup>
         <button className="primary-button" onClick={run} disabled={worker.isRunning}>{worker.isRunning ? "Running comparison…" : "Run comparison"}</button>
         <RunStatus {...worker} />

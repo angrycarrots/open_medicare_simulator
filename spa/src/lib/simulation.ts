@@ -35,14 +35,29 @@ export function validatePlan(plan: PlanDefinition): void {
   if (!plan.name.trim()) throw new Error("Plan name is required.");
   const positiveFields: Array<[number, string]> = [
     [plan.premium2026, "Plan premium"],
-    [plan.planDeductible2026, "Plan deductible"],
     [plan.partBDeductible2026, "Part B deductible"],
   ];
   for (const [value, label] of positiveFields) {
     if (!Number.isFinite(value) || value <= 0) throw new Error(`${label} must be positive.`);
   }
+  if (!Number.isFinite(plan.planDeductible2026) || plan.planDeductible2026 < 0) {
+    throw new Error("Plan deductible must be non-negative.");
+  }
   if (!Number.isFinite(plan.partDPremium2026) || plan.partDPremium2026 < 0) {
     throw new Error("Part D premium must be non-negative.");
+  }
+  const partADeductibleFields = [plan.partADeductible2026, plan.partADeductibleGrowthRate];
+  const suppliedPartADeductibleFields = partADeductibleFields.filter((value) => value !== undefined).length;
+  if (suppliedPartADeductibleFields === 1) {
+    throw new Error("Plan A deductible and growth rate must be supplied together.");
+  }
+  if (suppliedPartADeductibleFields === 2) {
+    if (plan.partADeductible2026 === undefined || !Number.isFinite(plan.partADeductible2026) || plan.partADeductible2026 <= 0) {
+      throw new Error("Plan A deductible must be positive.");
+    }
+    if (plan.partADeductibleGrowthRate === undefined || !Number.isFinite(plan.partADeductibleGrowthRate) || plan.partADeductibleGrowthRate < 0) {
+      throw new Error("Plan A deductible growth rate must be non-negative.");
+    }
   }
   const growthFields: Array<[number, string]> = [
     [plan.premiumGrowthRate, "Plan premium growth rate"],
@@ -103,10 +118,15 @@ export function annualCost(plan: PlanDefinition, yearOffset: number, isSick: boo
       : plan.specialistVisitsPerYear! *
         compound(plan.specialistCopay2026!, plan.specialistCopayGrowthRate!, yearOffset);
   if (!isSick) return premiums + specialistCost;
+  const partADeductible =
+    plan.partADeductible2026 === undefined || plan.partADeductibleGrowthRate === undefined
+      ? 0
+      : compound(plan.partADeductible2026, plan.partADeductibleGrowthRate, yearOffset);
   return (
     premiums +
     specialistCost +
     compound(plan.planDeductible2026, plan.planDeductibleGrowthRate, yearOffset) +
+    partADeductible +
     compound(plan.partBDeductible2026, plan.partBDeductibleGrowthRate, yearOffset)
   );
 }

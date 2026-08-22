@@ -5,9 +5,9 @@ This directory is an isolated React and TypeScript single-page application that 
 ## Features
 
 - Full Medicare/Medigap scenario simulator with CSV export.
-- Single-plan simulator for Plan G, High Deductible Plan G, Plan N, and custom plans.
+- Dedicated Plan G, Plan G HD, and Plan N simulators with per-plan parameters.
 - Side-by-side plan comparison using independent Monte Carlo samples.
-- Device-local persistence for simulator inputs and shared per-plan premium, deductible, and office-copay settings.
+- Device-local persistence for simulator inputs, universal simulation settings, and per-plan premium, deductible, and office-copay settings.
 - Web Worker execution, so the UI remains interactive through the maximum 10,000-simulation workload.
 - Static, relative-path build suitable for root or subpath hosting.
 

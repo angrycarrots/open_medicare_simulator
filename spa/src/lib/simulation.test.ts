@@ -1,12 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { createPlanG, createPlanN, withoutPartD, withPlanCostSettings } from "./plans";
+import { createPlanG, createPlanHDG, createPlanN, DEFAULT_SIMULATION_PARAMETERS, fullSimulatorPlan, withoutPartD, withPlanCostSettings } from "./plans";
 import { annualCost, percentile, runSimulation, SeededRandomSource, validatePlan } from "./simulation";
 
 describe("Medicare plan cost engine", () => {
+  it("uses the configured plan and Medicare deductible defaults", () => {
+    const planG = createPlanG();
+    const planHDG = createPlanHDG();
+    const planN = createPlanN();
+
+    expect(DEFAULT_SIMULATION_PARAMETERS.partADeductible2026).toBe(1736);
+    expect(DEFAULT_SIMULATION_PARAMETERS.partBDeductible2026).toBe(283);
+    expect([planG.premium2026, planG.planDeductible2026]).toEqual([157, 0]);
+    expect([planHDG.premium2026, planHDG.planDeductible2026]).toEqual([70, 2875]);
+    expect([planN.premium2026, planN.planDeductible2026]).toEqual([122, 0]);
+    expect([planG.specialistCopay2026, planHDG.specialistCopay2026, planN.specialistCopay2026]).toEqual([0, 20, 20]);
+  });
+
   it("matches the base Plan G healthy and full-utilization costs", () => {
     const plan = createPlanG({ startYear: 2026 });
-    expect(annualCost(plan, 0, false)).toBe(2688);
-    expect(annualCost(plan, 0, true)).toBe(3155);
+    expect(annualCost(plan, 0, false)).toBe(2472);
+    expect(annualCost(plan, 0, true)).toBe(2755);
   });
 
   it("applies editable plan costs to the simulation", () => {
@@ -19,22 +32,30 @@ describe("Medicare plan cost engine", () => {
     expect(plan.planDeductible2026).toBe(300);
     expect(plan.specialistCopay2026).toBe(25);
     expect(annualCost(plan, 0, false)).toBe(2988);
-    expect(annualCost(plan, 0, true)).toBe(3498);
+    expect(annualCost(plan, 0, true)).toBe(3571);
   });
 
   it("includes Plan N specialist copays in healthy and full-utilization costs", () => {
     const plan = createPlanN({ startYear: 2026 });
-    expect(annualCost(plan, 0, false)).toBe(2244);
-    expect(annualCost(plan, 0, true)).toBe(2711);
+    expect(annualCost(plan, 0, false)).toBe(2292);
+    expect(annualCost(plan, 0, true)).toBe(2575);
   });
 
   it("can exclude Part D costs from single-plan and comparison scenarios", () => {
     const plan = withoutPartD(createPlanG({ startYear: 2026 }));
     expect(plan.partDPremium2026).toBe(0);
     expect(plan.partDPremiumGrowthRate).toBe(0);
-    expect(annualCost(plan, 0, false)).toBe(2100);
-    expect(annualCost(plan, 0, true)).toBe(2567);
+    expect(annualCost(plan, 0, false)).toBe(1884);
+    expect(annualCost(plan, 0, true)).toBe(2167);
     expect(() => validatePlan(plan)).not.toThrow();
+  });
+
+  it("includes the Plan A deductible in full-utilization Full Simulator costs", () => {
+    const plan = fullSimulatorPlan({ ...DEFAULT_SIMULATION_PARAMETERS, startYear: 2026 });
+    expect(plan.partADeductible2026).toBe(1736);
+    expect(annualCost(plan, 0, false)).toBe(2472);
+    expect(annualCost(plan, 0, true)).toBe(4491);
+    expect(annualCost(plan, 1, true) - annualCost(plan, 1, false)).toBeCloseTo(2019 * 1.06);
   });
 
   it("requires a complete specialist-cost configuration", () => {
