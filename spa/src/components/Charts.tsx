@@ -1,10 +1,8 @@
-import createPlotlyComponent from "react-plotly.js/factory";
-import Plotly from "plotly.js-dist-min";
+import { Plot } from "./Plot";
 import type { ComparisonResult, SimulationResult } from "../types";
 import { currency, percent } from "../lib/format";
 import { mean, percentile, populationStandardDeviation } from "../lib/simulation";
 
-const Plot = createPlotlyComponent(Plotly);
 const chartConfig = { displaylogo: false, responsive: true };
 
 function yearsFor(result: SimulationResult): number[] {
@@ -50,7 +48,6 @@ export function SimulationSummary({ result, includeDownload, onDownload }: {
             layout={{ autosize: true, margin: { l: 62, r: 20, t: 14, b: 50 }, xaxis: { title: "Year" }, yaxis: { title: "Annual cost", tickprefix: "$", tickformat: ",.0f" }, hovermode: "x unified", paper_bgcolor: "transparent", plot_bgcolor: "transparent", legend: { orientation: "h", y: -0.25 } }}
             config={chartConfig}
             style={{ width: "100%", height: "330px" }}
-            useResizeHandler
           />
         </ChartCard>
         <ChartCard title="Lifetime cost distribution">
@@ -59,7 +56,6 @@ export function SimulationSummary({ result, includeDownload, onDownload }: {
             layout={{ autosize: true, margin: { l: 62, r: 20, t: 14, b: 50 }, xaxis: { title: "Lifetime cost", tickprefix: "$", tickformat: ",.0f" }, yaxis: { title: "Frequency" }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", shapes: [{ type: "line", x0: lifetimeMean, x1: lifetimeMean, y0: 0, y1: 1, yref: "paper", line: { color: "#c3423f", dash: "dash", width: 2 } }], annotations: [{ x: lifetimeMean, y: 1, yref: "paper", text: `Mean ${currency(lifetimeMean)}`, showarrow: false, yanchor: "bottom", font: { color: "#a13331" } }] }}
             config={chartConfig}
             style={{ width: "100%", height: "330px" }}
-            useResizeHandler
           />
         </ChartCard>
       </div>
@@ -96,7 +92,6 @@ export function ComparisonSummary({ result }: { result: ComparisonResult }) {
             layout={{ autosize: true, barmode: "overlay", margin: { l: 62, r: 20, t: 14, b: 50 }, xaxis: { title: "Lifetime cost", tickprefix: "$", tickformat: ",.0f" }, yaxis: { title: "Frequency" }, paper_bgcolor: "transparent", plot_bgcolor: "transparent", legend: { orientation: "h", y: -0.25 } }}
             config={chartConfig}
             style={{ width: "100%", height: "330px" }}
-            useResizeHandler
           />
         </ChartCard>
         <div className="table-card comparison-percentiles">

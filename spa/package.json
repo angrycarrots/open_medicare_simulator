@@ -13,18 +13,16 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "plotly.js-dist-min": "^2.35.2",
+    "plotly.js-basic-dist-min": "^3.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-plotly.js": "^2.6.0",
     "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "@types/plotly.js": "^2.35.2",
+    "@types/plotly.js": "^3.0.13",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@types/react-plotly.js": "^2.6.3",
     "@vitejs/plugin-react": "^4.3.4",
     "typescript": "^5.6.3",
     "vite": "^5.4.11",

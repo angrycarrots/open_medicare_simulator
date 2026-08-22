@@ -285,3 +285,7 @@ temp/
 
 # Project specific
 # Add any project-specific files or directories to ignore here
+
+# The SPA's calculation modules intentionally use the conventional `lib` name.
+!spa/src/lib/
+!spa/src/lib/**
