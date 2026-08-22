@@ -45,6 +45,7 @@ h3 { margin-bottom: 1rem; color: #254d55; font-size: .98rem; }
 .field input[type="number"], .field select { min-width: 0; width: 100%; border: 1px solid #b9cdc9; border-radius: .5rem; padding: .55rem .6rem; background: #fff; color: #17333b; }
 .field input:focus, .field select:focus, button:focus-visible, nav a:focus-visible { outline: 3px solid rgba(40, 148, 159, .35); outline-offset: 2px; }
 .field small { color: #708588; font-size: .74rem; font-weight: 500; }
+.settings-note { margin: .65rem 0 1rem; color: #60787c; font-size: .78rem; line-height: 1.45; }
 .range-field { margin-bottom: .1rem; }
 .range-field > label { display: inline-flex; align-items: center; gap: .35rem; }
 .range-row { display: grid; grid-template-columns: minmax(0, 1fr) 3.6rem; align-items: center; gap: .6rem; }

@@ -2,28 +2,40 @@ import { useMemo, useState } from "react";
 import { ComparisonSummary } from "../components/Charts";
 import { FieldGroup, NumberField, RangeField, RunStatus } from "../components/Fields";
 import { percent } from "../lib/format";
-import { createPlanG, createPlanHDG, createPlanN } from "../lib/plans";
+import {
+  createPlanG,
+  createPlanHDG,
+  createPlanN,
+  DEFAULT_PLAN_COST_SETTINGS,
+  PLAN_COST_SETTINGS_STORAGE_KEY,
+  withoutPartD,
+  withPlanCostSettings,
+  type PlanCostSettings,
+  type PlanCostSettingsById,
+  type PredefinedPlanChoice,
+} from "../lib/plans";
 import { annualCost } from "../lib/simulation";
 import { useSimulationWorker } from "../hooks/useSimulationWorker";
+import { usePersistentState } from "../hooks/usePersistentState";
 import type { ComparisonResult, PlanDefinition } from "../types";
 import { PageLayout } from "./FullSimulatorPage";
 
-type PlanChoice = "plan-g" | "plan-hdg" | "plan-n";
 const currentYear = new Date().getFullYear();
 
 export function ComparisonPage() {
-  const [firstChoice, setFirstChoice] = useState<PlanChoice>("plan-g");
-  const [secondChoice, setSecondChoice] = useState<PlanChoice>("plan-hdg");
-  const [percentSick, setPercentSick] = useState(0.2);
-  const [numSimulations, setNumSimulations] = useState(2500);
-  const [simulationYears, setSimulationYears] = useState(25);
-  const [startYear, setStartYear] = useState(currentYear);
+  const [firstChoice, setFirstChoice] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.comparison.first-plan.v1", "plan-g");
+  const [secondChoice, setSecondChoice] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.comparison.second-plan.v1", "plan-hdg");
+  const [percentSick, setPercentSick] = usePersistentState("medicare-simulator.comparison.utilization.v1", 0.2);
+  const [numSimulations, setNumSimulations] = usePersistentState("medicare-simulator.comparison.simulations.v1", 2500);
+  const [simulationYears, setSimulationYears] = usePersistentState("medicare-simulator.comparison.years.v1", 25);
+  const [startYear, setStartYear] = usePersistentState("medicare-simulator.comparison.start-year.v1", currentYear);
+  const [planCostSettings] = usePersistentState<PlanCostSettingsById>(PLAN_COST_SETTINGS_STORAGE_KEY, DEFAULT_PLAN_COST_SETTINGS);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const worker = useSimulationWorker();
   const plans = useMemo(() => ({
-    first: makePlan(firstChoice, percentSick, simulationYears, startYear),
-    second: makePlan(secondChoice, percentSick, simulationYears, startYear),
-  }), [firstChoice, secondChoice, percentSick, simulationYears, startYear]);
+    first: makePlan(firstChoice, planCostSettings[firstChoice], percentSick, simulationYears, startYear),
+    second: makePlan(secondChoice, planCostSettings[secondChoice], percentSick, simulationYears, startYear),
+  }), [firstChoice, secondChoice, planCostSettings, percentSick, simulationYears, startYear]);
   const run = async () => {
     try {
       setResult(await worker.runComparison({ plan1: plans.first, plan2: plans.second, numSimulations }));
@@ -39,6 +51,7 @@ export function ComparisonPage() {
         <h2>Compare plans</h2>
         <label className="field" htmlFor="first-plan"><span>Plan 1</span><PlanSelect id="first-plan" value={firstChoice} onChange={setFirstChoice} /></label>
         <label className="field" htmlFor="second-plan"><span>Plan 2</span><PlanSelect id="second-plan" value={secondChoice} onChange={setSecondChoice} /></label>
+        <p className="settings-note">Plan costs use the values saved on the Single Plan page.</p>
         <FieldGroup title="Shared simulation settings">
           <RangeField id="comparison-utilization" label="Probability of full utilization" value={percentSick} onChange={setPercentSick} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
           <NumberField id="comparison-simulations" label="Number of simulations" value={numSimulations} onChange={setNumSimulations} min={100} max={10000} step={100} />
@@ -58,24 +71,26 @@ export function ComparisonPage() {
   </PageLayout>;
 }
 
-function makePlan(choice: PlanChoice, percentSick: number, simulationYears: number, startYear: number): PlanDefinition {
+function makePlan(choice: PredefinedPlanChoice, costs: PlanCostSettings, percentSick: number, simulationYears: number, startYear: number): PlanDefinition {
   const overrides = { percentSick, simulationYears, startYear };
-  if (choice === "plan-hdg") return createPlanHDG(overrides);
-  if (choice === "plan-n") return createPlanN(overrides);
-  return createPlanG(overrides);
+  let plan: PlanDefinition;
+  if (choice === "plan-hdg") plan = createPlanHDG(overrides);
+  else if (choice === "plan-n") plan = createPlanN(overrides);
+  else plan = createPlanG(overrides);
+  return withoutPartD(withPlanCostSettings(plan, costs));
 }
 
-function PlanSelect({ id, value, onChange }: { id: string; value: PlanChoice; onChange: (value: PlanChoice) => void }) {
-  return <select id={id} value={value} onChange={(event) => onChange(event.currentTarget.value as PlanChoice)}><option value="plan-g">Plan G</option><option value="plan-hdg">High Deductible Plan G</option><option value="plan-n">Plan N</option></select>;
+function PlanSelect({ id, value, onChange }: { id: string; value: PredefinedPlanChoice; onChange: (value: PredefinedPlanChoice) => void }) {
+  return <select id={id} value={value} onChange={(event) => onChange(event.currentTarget.value as PredefinedPlanChoice)}><option value="plan-g">Plan G</option><option value="plan-hdg">High Deductible Plan G</option><option value="plan-n">Plan N</option></select>;
 }
 
 function PlanComparisonTable({ first, second }: { first: PlanDefinition; second: PlanDefinition }) {
   const fields: Array<[string, string, string]> = [
     ["Monthly premium", `$${first.premium2026.toFixed(2)}`, `$${second.premium2026.toFixed(2)}`],
     ["Annual plan deductible", `$${first.planDeductible2026.toFixed(2)}`, `$${second.planDeductible2026.toFixed(2)}`],
-    ["Part D monthly premium", `$${first.partDPremium2026.toFixed(2)}`, `$${second.partDPremium2026.toFixed(2)}`],
+    ["Office visit copay", `$${first.specialistCopay2026?.toFixed(2)}`, `$${second.specialistCopay2026?.toFixed(2)}`],
     ["Part B annual deductible", `$${first.partBDeductible2026.toFixed(2)}`, `$${second.partBDeductible2026.toFixed(2)}`],
-    ["Specialist visits", first.specialistVisitsPerYear === undefined ? "None" : `${first.specialistVisitsPerYear}/year`, second.specialistVisitsPerYear === undefined ? "None" : `${second.specialistVisitsPerYear}/year`],
+    ["Assumed office visits", `${first.specialistVisitsPerYear}/year`, `${second.specialistVisitsPerYear}/year`],
   ];
   return <section className="table-card"><h2>Plan details</h2><table><thead><tr><th>Cost component</th><th>{first.name}</th><th>{second.name}</th></tr></thead><tbody>{fields.map(([label, firstValue, secondValue]) => <tr key={label}><td>{label}</td><td>{firstValue}</td><td>{secondValue}</td></tr>)}</tbody></table></section>;
 }

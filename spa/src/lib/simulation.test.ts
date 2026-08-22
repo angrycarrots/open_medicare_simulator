@@ -1,12 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { createPlanG, createPlanN } from "./plans";
+import { createPlanG, createPlanN, withoutPartD, withPlanCostSettings } from "./plans";
 import { annualCost, percentile, runSimulation, SeededRandomSource, validatePlan } from "./simulation";
 
 describe("Medicare plan cost engine", () => {
   it("matches the base Plan G healthy and full-utilization costs", () => {
     const plan = createPlanG({ startYear: 2026 });
-    expect(annualCost(plan, 0, false)).toBe(2448);
-    expect(annualCost(plan, 0, true)).toBe(2915);
+    expect(annualCost(plan, 0, false)).toBe(2688);
+    expect(annualCost(plan, 0, true)).toBe(3155);
+  });
+
+  it("applies editable plan costs to the simulation", () => {
+    const plan = withPlanCostSettings(createPlanG({ startYear: 2026 }), {
+      monthlyPremium: 175,
+      planDeductible: 300,
+      officeVisitCopay: 25,
+    });
+    expect(plan.premium2026).toBe(175);
+    expect(plan.planDeductible2026).toBe(300);
+    expect(plan.specialistCopay2026).toBe(25);
+    expect(annualCost(plan, 0, false)).toBe(2988);
+    expect(annualCost(plan, 0, true)).toBe(3498);
   });
 
   it("includes Plan N specialist copays in healthy and full-utilization costs", () => {
@@ -15,8 +28,17 @@ describe("Medicare plan cost engine", () => {
     expect(annualCost(plan, 0, true)).toBe(2711);
   });
 
+  it("can exclude Part D costs from single-plan and comparison scenarios", () => {
+    const plan = withoutPartD(createPlanG({ startYear: 2026 }));
+    expect(plan.partDPremium2026).toBe(0);
+    expect(plan.partDPremiumGrowthRate).toBe(0);
+    expect(annualCost(plan, 0, false)).toBe(2100);
+    expect(annualCost(plan, 0, true)).toBe(2567);
+    expect(() => validatePlan(plan)).not.toThrow();
+  });
+
   it("requires a complete specialist-cost configuration", () => {
-    const plan = createPlanG({ specialistVisitsPerYear: 4 });
+    const plan = createPlanG({ specialistVisitsPerYear: 4, specialistCopay2026: undefined });
     expect(() => validatePlan(plan)).toThrow("must be supplied together");
   });
 

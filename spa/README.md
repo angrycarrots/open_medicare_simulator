@@ -7,6 +7,7 @@ This directory is an isolated React and TypeScript single-page application that 
 - Full Medicare/Medigap scenario simulator with CSV export.
 - Single-plan simulator for Plan G, High Deductible Plan G, Plan N, and custom plans.
 - Side-by-side plan comparison using independent Monte Carlo samples.
+- Device-local persistence for simulator inputs and shared per-plan premium, deductible, and office-copay settings.
 - Web Worker execution, so the UI remains interactive through the maximum 10,000-simulation workload.
 - Static, relative-path build suitable for root or subpath hosting.
 
@@ -24,6 +25,6 @@ Use `npm test` for the TypeScript domain tests and `npm run build` to produce st
 
 ## Calculation notes
 
-Each simulated year always includes annualized Medigap and Part D premiums. A full-utilization year adds the plan and Part B deductibles. Plan N also includes the configured annual specialist copays in both healthy and full-utilization outcomes. Growth compounds annually. Statistics use a population standard deviation and percentile interpolation compatible with NumPy's default linear method.
+Single-plan and comparison scenarios include annualized Medigap premiums plus the selected plan's configured office-visit copays, using an assumption of 12 visits per year; they intentionally exclude Part D. The Full Simulator retains its separate Part D inputs and costs. A full-utilization year adds the plan and Part B deductibles. Growth compounds annually. Statistics use a population standard deviation and percentile interpolation compatible with NumPy's default linear method.
 
 Results are educational estimates only and are not financial, insurance, or medical advice.

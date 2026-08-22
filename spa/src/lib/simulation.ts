@@ -36,11 +36,13 @@ export function validatePlan(plan: PlanDefinition): void {
   const positiveFields: Array<[number, string]> = [
     [plan.premium2026, "Plan premium"],
     [plan.planDeductible2026, "Plan deductible"],
-    [plan.partDPremium2026, "Part D premium"],
     [plan.partBDeductible2026, "Part B deductible"],
   ];
   for (const [value, label] of positiveFields) {
     if (!Number.isFinite(value) || value <= 0) throw new Error(`${label} must be positive.`);
+  }
+  if (!Number.isFinite(plan.partDPremium2026) || plan.partDPremium2026 < 0) {
+    throw new Error("Part D premium must be non-negative.");
   }
   const growthFields: Array<[number, string]> = [
     [plan.premiumGrowthRate, "Plan premium growth rate"],

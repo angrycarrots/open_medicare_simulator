@@ -6,14 +6,15 @@ import { percent } from "../lib/format";
 import { fullSimulatorPlan, DEFAULT_SIMULATION_PARAMETERS } from "../lib/plans";
 import { annualCost } from "../lib/simulation";
 import { useSimulationWorker } from "../hooks/useSimulationWorker";
+import { usePersistentState } from "../hooks/usePersistentState";
 import type { SimulationParameters, SimulationResult } from "../types";
 
 const simulationChoices = [100, 500, 1000, 2500, 5000];
 const currentYear = new Date().getFullYear();
 
 export function FullSimulatorPage() {
-  const [parameters, setParameters] = useState<SimulationParameters>(DEFAULT_SIMULATION_PARAMETERS);
-  const [numSimulations, setNumSimulations] = useState(2500);
+  const [parameters, setParameters] = usePersistentState<SimulationParameters>("medicare-simulator.full.parameters.v1", DEFAULT_SIMULATION_PARAMETERS);
+  const [numSimulations, setNumSimulations] = usePersistentState("medicare-simulator.full.simulations.v1", 2500);
   const [result, setResult] = useState<SimulationResult | null>(null);
   const worker = useSimulationWorker();
 
