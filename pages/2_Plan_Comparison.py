@@ -18,12 +18,6 @@ from medigap.simulation.plan_monte_carlo import PlanMonteCarloSimulation
 
 def create_plan_comparison_interface():
     """Create interface for comparing two plans."""
-    # Navigation
-    st.sidebar.title("🏥 Open Medicare Simulator")
-    if st.sidebar.button("🏠 Back to Home", use_container_width=True):
-        st.switch_page("main_app.py")
-    st.sidebar.markdown("---")
-    
     st.sidebar.header("🏥 Plan Comparison")
     
     # Plan selection

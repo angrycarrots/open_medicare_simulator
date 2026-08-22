@@ -18,12 +18,6 @@ from medigap.simulation.plan_monte_carlo import PlanMonteCarloSimulation
 
 def create_plan_selection() -> tuple:
     """Create plan selection interface and return selected plan and custom parameters."""
-    # Navigation
-    st.sidebar.title("🏥 Open Medicare Simulator")
-    if st.sidebar.button("🏠 Back to Home", use_container_width=True):
-        st.switch_page("main_app.py")
-    st.sidebar.markdown("---")
-    
     st.sidebar.header("🏥 Medicare Plan Selection")
     
     # Plan selection

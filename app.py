@@ -68,7 +68,6 @@ def create_parameter_inputs() -> SimulationParameters:
         max_value=0.15,
         value=0.07,
         step=0.01,
-        format="%.1%",
         help="Annual growth rate for Medigap premium"
     )
     
@@ -415,4 +414,27 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    full_simulator_page = st.Page(main, title="Full Simulator", default=True)
+    single_plan_page = st.Page(
+        "pages/1_Single_Plan_Simulator.py",
+        title="Single Plan Simulator",
+        url_path="Single_Plan_Simulator",
+    )
+    plan_comparison_page = st.Page(
+        "pages/2_Plan_Comparison.py",
+        title="Plan Comparison",
+        url_path="Plan_Comparison",
+    )
+    pages = [full_simulator_page, single_plan_page, plan_comparison_page]
+    current_page = st.navigation(pages, position="hidden")
+
+    for page in pages:
+        if st.sidebar.button(
+            page.title,
+            key=f"nav_{page.url_path or 'full_simulator'}",
+            type="primary" if page.url_path == current_page.url_path else "secondary",
+            width="stretch",
+        ):
+            st.switch_page(page)
+
+    current_page.run()

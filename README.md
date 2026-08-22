@@ -2,6 +2,40 @@
 
 A Python application that executes a Monte Carlo simulation of medical costs incurred over a 25-year period (2026-2050) for Medicare Parts A, B, D, and Medigap Plan N.
 
+## Quickstart
+
+This project requires [uv](https://docs.astral.sh/uv/). UV installs the required Python version, creates the virtual environment, and installs the project dependencies from `uv.lock`.
+
+```bash
+git clone https://github.com/angrycarrots/open_medicare_simulator
+cd open_medicare_simulator
+uv sync
+```
+
+### 1. Web app (recommended)
+
+```bash
+uv run streamlit run app.py
+```
+
+Open <http://localhost:8501> if Streamlit does not open it automatically. The web app includes the Full Simulator, Single Plan Simulator, and Plan Comparison pages.
+
+### 2. Desktop GUI
+
+```bash
+uv run python gui.py
+```
+
+The desktop GUI uses Tkinter and requires a graphical desktop environment.
+
+### 3. Command-line interface
+
+```bash
+uv run python main.py
+```
+
+The CLI runs the default simulation, prints its results, and generates the output charts in the project directory.
+
 ## Features
 
 - **Monte Carlo Simulation**: Probabilistic modeling of medical cost projections
@@ -16,61 +50,76 @@ A Python application that executes a Monte Carlo simulation of medical costs inc
 
 ### Prerequisites
 
-- Python 3.13 or higher
-- uv package manager (recommended) or pip
+- [uv](https://docs.astral.sh/uv/getting-started/installation/)
+
+Python 3.13 or higher is required by the project and is managed automatically by UV when needed.
 
 ### Setup
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
-cd medigap
+cd open_medicare_simulator
 ```
 
-2. Create and activate virtual environment:
+2. Create the environment and install the locked dependencies:
+
 ```bash
-uv venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+uv sync
 ```
 
-3. Install dependencies:
-```bash
-uv pip install -e .
-```
+There is no need to activate `.venv`; run project commands through `uv run`.
 
-4. Install development dependencies:
+3. To install the development tools and test dependencies:
+
 ```bash
-uv pip install -e ".[dev]"
+uv sync --extra dev
 ```
 
 ## Usage
 
-### Basic Usage
+### Web application
 
-#### Command Line Interface
-
-Run the simulation with default parameters:
+Start the multipage Streamlit application:
 
 ```bash
-python main.py
+uv run streamlit run app.py
 ```
 
-#### Graphical User Interface
+The web interface provides:
 
-For a more user-friendly experience, use the GUI application:
+- A full simulator with configurable cost and growth assumptions
+- A single-plan simulator with predefined and custom plans
+- Side-by-side plan comparison
+- Interactive charts, percentile analysis, and CSV downloads
+
+### Graphical user interface
+
+Start the desktop Tkinter application:
 
 ```bash
-python gui.py
+uv run python gui.py
 ```
 
 The GUI provides:
+
 - Interactive parameter input with validation
 - Real-time simulation progress
 - Multiple chart types (expenditure, lifetime distribution, dashboard)
 - Export functionality for results and charts
 - Tabbed interface for easy navigation
 
-This will:
+### Command-line interface
+
+Run the default simulation from a terminal:
+
+```bash
+uv run python main.py
+```
+
+The CLI will:
+
 - Run 1,000 Monte Carlo simulations
 - Display comprehensive cost statistics table with minimum, maximum, and median values
 - Show detailed year-by-year cost breakdown with all premium and deductible components
@@ -186,16 +235,16 @@ Run the test suite:
 
 ```bash
 # Run all tests
-pytest
+uv run pytest
 
 # Run with coverage
-pytest --cov=src/medigap --cov-report=html
+uv run pytest --cov=src/medigap --cov-report=html
 
 # Run specific test file
-pytest tests/test_monte_carlo.py
+uv run pytest tests/test_monte_carlo.py
 
 # Run with verbose output
-pytest -v
+uv run pytest -v
 ```
 
 ## Development
@@ -213,13 +262,13 @@ Run code quality checks:
 
 ```bash
 # Format code
-black src/ tests/
+uv run black src/ tests/
 
 # Lint code
-flake8 src/ tests/
+uv run flake8 src/ tests/
 
 # Type check
-mypy src/
+uv run mypy src/
 ```
 
 ### Adding New Features
