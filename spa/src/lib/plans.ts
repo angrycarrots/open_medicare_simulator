@@ -9,6 +9,8 @@ export interface PlanCostSettings {
   monthlyPremium: number;
   planDeductible: number;
   officeVisitCopay: number;
+  planPremiumGrowthRate: number;
+  planDeductibleGrowthRate: number;
 }
 
 export type PlanCostSettingsById = Record<PlanChoice, PlanCostSettings>;
@@ -78,7 +80,7 @@ export function createPlanHDG(overrides: Partial<PlanDefinition> = {}): PlanDefi
     name: "High Deductible Plan G",
     premium2026: 70,
     planDeductible2026: 2875,
-    specialistCopay2026: 20,
+    specialistCopay2026: 30,
     ...overrides,
   };
 }
@@ -113,6 +115,8 @@ function costSettings(plan: PlanDefinition): PlanCostSettings {
     monthlyPremium: plan.premium2026,
     planDeductible: plan.planDeductible2026,
     officeVisitCopay: plan.specialistCopay2026 ?? 20,
+    planPremiumGrowthRate: plan.premiumGrowthRate,
+    planDeductibleGrowthRate: plan.planDeductibleGrowthRate,
   };
 }
 
@@ -123,13 +127,26 @@ export const DEFAULT_PLAN_COST_SETTINGS: PlanCostSettingsById = {
   custom: costSettings(createCustomPlan()),
 };
 
-export const PLAN_COST_SETTINGS_STORAGE_KEY = "medicare-simulator.plan-costs.v3";
+export const PLAN_COST_SETTINGS_STORAGE_KEY = "medicare-simulator.plan-costs.v5";
+
+export function normalizePlanCostSettings(
+  settings: Partial<Record<PlanChoice, Partial<PlanCostSettings>>> | null | undefined,
+): PlanCostSettingsById {
+  return {
+    "plan-g": { ...DEFAULT_PLAN_COST_SETTINGS["plan-g"], ...settings?.["plan-g"] },
+    "plan-hdg": { ...DEFAULT_PLAN_COST_SETTINGS["plan-hdg"], ...settings?.["plan-hdg"] },
+    "plan-n": { ...DEFAULT_PLAN_COST_SETTINGS["plan-n"], ...settings?.["plan-n"] },
+    custom: { ...DEFAULT_PLAN_COST_SETTINGS.custom, ...settings?.custom },
+  };
+}
 
 export function withPlanCostSettings(plan: PlanDefinition, settings: PlanCostSettings): PlanDefinition {
   return {
     ...plan,
     premium2026: settings.monthlyPremium,
+    premiumGrowthRate: settings.planPremiumGrowthRate,
     planDeductible2026: settings.planDeductible,
+    planDeductibleGrowthRate: settings.planDeductibleGrowthRate,
     specialistVisitsPerYear: plan.specialistVisitsPerYear ?? 12,
     specialistCopay2026: settings.officeVisitCopay,
     specialistCopayGrowthRate: plan.specialistCopayGrowthRate ?? plan.premiumGrowthRate,

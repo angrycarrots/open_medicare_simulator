@@ -7,6 +7,7 @@ import {
   DEFAULT_PLAN_COST_SETTINGS,
   DEFAULT_SIMULATION_PARAMETERS,
   fullSimulatorPlan,
+  normalizePlanCostSettings,
   PLAN_COST_SETTINGS_STORAGE_KEY,
   PREDEFINED_PLANS,
   type PlanCostSettingsById,
@@ -23,7 +24,8 @@ const currentYear = new Date().getFullYear();
 export function FullSimulatorPage() {
   const [parameters, setParameters] = usePersistentState<SimulationParameters>("medicare-simulator.full.parameters.v2", DEFAULT_SIMULATION_PARAMETERS);
   const [selectedPlan, setSelectedPlan] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.full.selected-plan.v1", "plan-g");
-  const [planCostSettings] = usePersistentState<PlanCostSettingsById>(PLAN_COST_SETTINGS_STORAGE_KEY, DEFAULT_PLAN_COST_SETTINGS);
+  const [storedPlanCostSettings] = usePersistentState<PlanCostSettingsById>(PLAN_COST_SETTINGS_STORAGE_KEY, DEFAULT_PLAN_COST_SETTINGS);
+  const planCostSettings = normalizePlanCostSettings(storedPlanCostSettings);
   const { settings: simulationSettings, updateSetting } = useSimulationSettings();
   const [result, setResult] = useState<SimulationResult | null>(null);
   const worker = useSimulationWorker();
@@ -32,7 +34,9 @@ export function FullSimulatorPage() {
   const effectiveParameters = {
     ...resolvedParameters,
     medigapPremium2026: selectedPlanCosts.monthlyPremium,
+    medigapPremiumGrowthRate: selectedPlanCosts.planPremiumGrowthRate,
     planDeductible2026: selectedPlanCosts.planDeductible,
+    planDeductibleGrowthRate: selectedPlanCosts.planDeductibleGrowthRate,
     percentSick: simulationSettings.percentSick,
     simulationYears: simulationSettings.simulationYears,
     startYear: simulationSettings.startYear,
@@ -62,14 +66,12 @@ export function FullSimulatorPage() {
           <h2>Scenario inputs</h2>
           <FieldGroup title="Base costs">
             <label className="field" htmlFor="full-plan"><span>Select plan</span><select id="full-plan" value={selectedPlan} onChange={(event) => setSelectedPlan(event.currentTarget.value as PredefinedPlanChoice)}><option value="plan-g">Plan G</option><option value="plan-hdg">Plan G HD</option><option value="plan-n">Plan N</option></select></label>
-            <p className="settings-note">Uses the selected plan page's saved premium (${selectedPlanCosts.monthlyPremium.toFixed(2)}/month) and deductible (${selectedPlanCosts.planDeductible.toFixed(2)}/year).</p>
+            <p className="settings-note">Uses the selected plan page's saved premium (${selectedPlanCosts.monthlyPremium.toFixed(2)}/month at {percent(selectedPlanCosts.planPremiumGrowthRate)} growth) and deductible (${selectedPlanCosts.planDeductible.toFixed(2)}/year at {percent(selectedPlanCosts.planDeductibleGrowthRate)} growth).</p>
             <NumberField id="full-part-d" label="Part D premium (monthly)" value={resolvedParameters.partDPremium2026} onChange={(value) => update("partDPremium2026", value)} min={10} max={200} step={5} />
             <NumberField id="full-part-a" label="Plan A deductible (annual)" value={resolvedParameters.partADeductible2026} onChange={(value) => update("partADeductible2026", value)} min={100} max={5000} step={1} />
             <NumberField id="full-part-b" label="Plan B deductible (annual)" value={resolvedParameters.partBDeductible2026} onChange={(value) => update("partBDeductible2026", value)} min={100} max={500} step={10} />
           </FieldGroup>
           <FieldGroup title="Annual growth rates">
-            <RangeField id="full-medigap-growth" label="Medigap premium" value={resolvedParameters.medigapPremiumGrowthRate} onChange={(value) => update("medigapPremiumGrowthRate", value)} max={0.15} format={percent} />
-            <RangeField id="full-deductible-growth" label="Plan deductible" value={resolvedParameters.planDeductibleGrowthRate} onChange={(value) => update("planDeductibleGrowthRate", value)} max={0.15} format={percent} />
             <RangeField id="full-part-d-growth" label="Part D premium" value={resolvedParameters.partDPremiumGrowthRate} onChange={(value) => update("partDPremiumGrowthRate", value)} max={0.15} format={percent} />
             <RangeField id="full-part-a-growth" label="Plan A deductible" value={resolvedParameters.partADeductibleGrowthRate} onChange={(value) => update("partADeductibleGrowthRate", value)} max={0.15} format={percent} />
             <RangeField id="full-part-b-growth" label="Plan B deductible" value={resolvedParameters.partBDeductibleGrowthRate} onChange={(value) => update("partBDeductibleGrowthRate", value)} max={0.15} format={percent} />

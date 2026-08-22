@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createPlanG, createPlanHDG, createPlanN, DEFAULT_SIMULATION_PARAMETERS, fullSimulatorPlan, withoutPartD, withPlanCostSettings } from "./plans";
+import { createPlanG, createPlanHDG, createPlanN, DEFAULT_SIMULATION_PARAMETERS, fullSimulatorPlan, normalizePlanCostSettings, withoutPartD, withPlanCostSettings } from "./plans";
 import { annualCost, percentile, runSimulation, SeededRandomSource, validatePlan } from "./simulation";
 
 describe("Medicare plan cost engine", () => {
@@ -13,7 +13,19 @@ describe("Medicare plan cost engine", () => {
     expect([planG.premium2026, planG.planDeductible2026]).toEqual([157, 0]);
     expect([planHDG.premium2026, planHDG.planDeductible2026]).toEqual([70, 2875]);
     expect([planN.premium2026, planN.planDeductible2026]).toEqual([122, 0]);
-    expect([planG.specialistCopay2026, planHDG.specialistCopay2026, planN.specialistCopay2026]).toEqual([0, 20, 20]);
+    expect([planG.specialistCopay2026, planHDG.specialistCopay2026, planN.specialistCopay2026]).toEqual([0, 30, 20]);
+  });
+
+  it("repairs missing growth rates in previously saved plan settings", () => {
+    const settings = normalizePlanCostSettings({
+      "plan-g": { monthlyPremium: 165, planDeductible: 0, officeVisitCopay: 0 },
+    });
+
+    expect(settings["plan-g"].monthlyPremium).toBe(165);
+    expect(settings["plan-g"].planPremiumGrowthRate).toBe(0.07);
+    expect(settings["plan-g"].planDeductibleGrowthRate).toBe(0.06);
+    expect(settings["plan-hdg"].planPremiumGrowthRate).toBe(0.07);
+    expect(settings["plan-n"].planDeductibleGrowthRate).toBe(0.06);
   });
 
   it("matches the base Plan G healthy and full-utilization costs", () => {
@@ -27,12 +39,18 @@ describe("Medicare plan cost engine", () => {
       monthlyPremium: 175,
       planDeductible: 300,
       officeVisitCopay: 25,
+      planPremiumGrowthRate: 0.08,
+      planDeductibleGrowthRate: 0.05,
     });
     expect(plan.premium2026).toBe(175);
     expect(plan.planDeductible2026).toBe(300);
     expect(plan.specialistCopay2026).toBe(25);
+    expect(plan.premiumGrowthRate).toBe(0.08);
+    expect(plan.planDeductibleGrowthRate).toBe(0.05);
     expect(annualCost(plan, 0, false)).toBe(2988);
     expect(annualCost(plan, 0, true)).toBe(3571);
+    expect(annualCost(withoutPartD(plan), 1, false)).toBeCloseTo(2589);
+    expect(annualCost(withoutPartD(plan), 1, true)).toBeCloseTo(3203.98);
   });
 
   it("includes Plan N specialist copays in healthy and full-utilization costs", () => {

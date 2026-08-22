@@ -5,6 +5,7 @@ import { percent } from "../lib/format";
 import { annualCost } from "../lib/simulation";
 import {
   DEFAULT_PLAN_COST_SETTINGS,
+  normalizePlanCostSettings,
   PLAN_COST_SETTINGS_STORAGE_KEY,
   PREDEFINED_PLANS,
   withoutPartD,
@@ -37,9 +38,13 @@ const PAGE_CONTENT: Record<PredefinedPlanChoice, { title: string; lead: string }
 };
 
 export function PlanPage({ planId }: { planId: PredefinedPlanChoice }) {
-  const [planCostSettings, setPlanCostSettings] = usePersistentState<PlanCostSettingsById>(
+  const [storedPlanCostSettings, setStoredPlanCostSettings] = usePersistentState<PlanCostSettingsById>(
     PLAN_COST_SETTINGS_STORAGE_KEY,
     DEFAULT_PLAN_COST_SETTINGS,
+  );
+  const planCostSettings = useMemo(
+    () => normalizePlanCostSettings(storedPlanCostSettings),
+    [storedPlanCostSettings],
   );
   const { settings: simulationSettings, updateSetting } = useSimulationSettings();
   const [result, setResult] = useState<SimulationResult | null>(null);
@@ -59,10 +64,13 @@ export function PlanPage({ planId }: { planId: PredefinedPlanChoice }) {
     key: Key,
     value: PlanCostSettings[Key],
   ) => {
-    setPlanCostSettings((allSettings) => ({
-      ...allSettings,
-      [planId]: { ...allSettings[planId], [key]: value },
-    }));
+    setStoredPlanCostSettings((storedSettings) => {
+      const allSettings = normalizePlanCostSettings(storedSettings);
+      return {
+        ...allSettings,
+        [planId]: { ...allSettings[planId], [key]: value },
+      };
+    });
   };
 
   const run = async () => {
@@ -88,6 +96,7 @@ export function PlanPage({ planId }: { planId: PredefinedPlanChoice }) {
         <aside className="control-panel" aria-label={`${page.title} simulation controls`}>
           <h2>{page.title} settings</h2>
           <PlanCostFields planId={planId} settings={planCostSettings[planId]} update={updatePlanCost} />
+          <PlanGrowthFields planId={planId} settings={planCostSettings[planId]} update={updatePlanCost} />
           <FieldGroup title="Simulation settings">
             <RangeField id={`${planId}-utilization`} label="Probability of full utilization" value={simulationSettings.percentSick} onChange={(value) => updateSetting("percentSick", value)} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
             <NumberField id={`${planId}-simulations`} label="Number of simulations" value={simulationSettings.numSimulations} onChange={(value) => updateSetting("numSimulations", value)} min={100} max={10000} step={100} />
@@ -113,6 +122,13 @@ function PlanCostFields({ planId, settings, update }: { planId: PredefinedPlanCh
     <NumberField id={`${planId}-premium`} label="Monthly premium" value={settings.monthlyPremium} onChange={(value) => update("monthlyPremium", value)} min={1} max={1000} step={1} />
     <NumberField id={`${planId}-deductible`} label="Plan deductible (annual)" value={settings.planDeductible} onChange={(value) => update("planDeductible", value)} min={0} max={10000} step={1} />
     <NumberField id={`${planId}-office-copay`} label="Office visit copay" value={settings.officeVisitCopay} onChange={(value) => update("officeVisitCopay", value)} min={0} max={500} step={1} help="Applied to the plan's assumed 12 office visits per year." />
+  </FieldGroup>;
+}
+
+function PlanGrowthFields({ planId, settings, update }: { planId: PredefinedPlanChoice; settings: PlanCostSettings; update: <Key extends keyof PlanCostSettings>(key: Key, value: PlanCostSettings[Key]) => void }) {
+  return <FieldGroup title="Annual growth rates">
+    <RangeField id={`${planId}-premium-growth`} label="Plan premium" value={settings.planPremiumGrowthRate} onChange={(value) => update("planPremiumGrowthRate", value)} max={0.2} format={percent} />
+    <RangeField id={`${planId}-deductible-growth`} label="Plan deductible" value={settings.planDeductibleGrowthRate} onChange={(value) => update("planDeductibleGrowthRate", value)} max={0.2} format={percent} />
   </FieldGroup>;
 }
 

@@ -7,6 +7,7 @@ import {
   createPlanHDG,
   createPlanN,
   DEFAULT_PLAN_COST_SETTINGS,
+  normalizePlanCostSettings,
   PLAN_COST_SETTINGS_STORAGE_KEY,
   withoutPartD,
   withPlanCostSettings,
@@ -27,7 +28,8 @@ export function ComparisonPage() {
   const [firstChoice, setFirstChoice] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.comparison.first-plan.v1", "plan-g");
   const [secondChoice, setSecondChoice] = usePersistentState<PredefinedPlanChoice>("medicare-simulator.comparison.second-plan.v1", "plan-hdg");
   const { settings: simulationSettings, updateSetting } = useSimulationSettings();
-  const [planCostSettings] = usePersistentState<PlanCostSettingsById>(PLAN_COST_SETTINGS_STORAGE_KEY, DEFAULT_PLAN_COST_SETTINGS);
+  const [storedPlanCostSettings] = usePersistentState<PlanCostSettingsById>(PLAN_COST_SETTINGS_STORAGE_KEY, DEFAULT_PLAN_COST_SETTINGS);
+  const planCostSettings = useMemo(() => normalizePlanCostSettings(storedPlanCostSettings), [storedPlanCostSettings]);
   const [result, setResult] = useState<ComparisonResult | null>(null);
   const worker = useSimulationWorker();
   const plans = useMemo(() => ({
