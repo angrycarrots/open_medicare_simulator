@@ -1,5 +1,6 @@
 """Base Medicare plan class for different plan types."""
 
+from datetime import date
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -24,7 +25,7 @@ class Plan(ABC):
         part_b_deductible_growth_rate: float = 0.06,
         percent_sick: float = 0.20,
         simulation_years: int = 25,
-        start_year: int = 2026,
+        start_year: int = date.today().year,
         # Specialist visit parameters (optional, defaults to None for plans without specialist visits)
         specialist_visits_per_year: Optional[int] = None,
         specialist_copay_2026: Optional[float] = None,

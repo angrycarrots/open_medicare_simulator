@@ -2,6 +2,7 @@
 
 import sys
 import os
+from datetime import date
 import tkinter as tk
 from tkinter import ttk, filedialog
 import matplotlib.pyplot as plt
@@ -309,7 +310,7 @@ class MedicareSimulatorGUI:
         
         # Number of simulations
         ttk.Label(params_frame, text="Number of Simulations:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        self.num_simulations_var = tk.StringVar(value="1000")
+        self.num_simulations_var = tk.StringVar(value="2500")
         num_sim_entry = ttk.Entry(params_frame, textvariable=self.num_simulations_var, width=10)
         num_sim_entry.grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
         
@@ -345,7 +346,7 @@ class MedicareSimulatorGUI:
         
         # Start year
         ttk.Label(params_frame, text="Start Year:").grid(row=1, column=2, sticky=tk.W, padx=5, pady=5)
-        self.start_year_var = tk.StringVar(value="2026")
+        self.start_year_var = tk.StringVar(value=str(date.today().year))
         start_year_entry = ttk.Entry(params_frame, textvariable=self.start_year_var, width=10)
         start_year_entry.grid(row=1, column=3, sticky=tk.W, padx=5, pady=5)
         
@@ -496,7 +497,7 @@ class MedicareSimulatorGUI:
             
             # Run comparison
             simulation1 = PlanMonteCarloSimulation(plan1)
-            comparison = simulation1.compare_plans(plan2, 1000)
+            comparison = simulation1.compare_plans(plan2, 2500)
             
             # Display results
             results = f"Plan Comparison Results\n"

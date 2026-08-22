@@ -120,7 +120,7 @@ uv run python main.py
 
 The CLI will:
 
-- Run 1,000 Monte Carlo simulations
+- Run 2,500 Monte Carlo simulations
 - Display comprehensive cost statistics table with minimum, maximum, and median values
 - Show detailed year-by-year cost breakdown with all premium and deductible components
 - Display year-by-year cost projections with confidence intervals
@@ -146,7 +146,7 @@ params = SimulationParameters(
 
 # Run simulation
 simulation = MonteCarloSimulation(params)
-results = simulation.run_comprehensive_simulation(1000)
+results = simulation.run_comprehensive_simulation(2500)
 ```
 
 ### Programmatic Usage
@@ -162,7 +162,7 @@ simulation = MonteCarloSimulation(params)
 visualization = Visualization()
 
 # Run simulation
-results = simulation.run_comprehensive_simulation(1000)
+results = simulation.run_comprehensive_simulation(2500)
 
 # Create custom visualizations
 years = list(range(2026, 2051))
@@ -191,7 +191,9 @@ The simulation uses the following default parameters:
 | Part B Deductible (2026) | $210.00/year | Base Part B deductible |
 | Part B Deductible Growth Rate | 6.0% | Annual Part B deductible growth |
 | Percent Sick | 20.0% | Probability of full utilization |
-| Simulation Years | 25 | Years to simulate (2026-2050) |
+| Number of Simulations | 2,500 | Monte Carlo runs |
+| Simulation Years | 25 | Number of years to simulate |
+| Start Year | Current calendar year | First year of the simulation |
 
 ## Simulation Logic
 
@@ -303,10 +305,10 @@ Simulation Parameters:
   Part B Deductible Growth Rate: 6.0%
   Percent Sick: 20.0%
   Simulation Years: 25
-  Start Year: 2026
+  Start Year: <current year>
 
 Running Monte Carlo simulation...
-Simulation completed with 1,000 runs
+Simulation completed with 2,500 runs
 
 Cost Statistics Summary:
 ============================================================

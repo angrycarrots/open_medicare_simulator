@@ -132,11 +132,11 @@ class MonteCarloSimulation:
         
         return lifetime_costs
 
-    def run_comprehensive_simulation(self, num_simulations: int = 1000) -> Dict[str, Any]:
+    def run_comprehensive_simulation(self, num_simulations: int = 2500) -> Dict[str, Any]:
         """Run a comprehensive simulation with statistics.
         
         Args:
-            num_simulations: Number of simulations to run (default: 1000)
+            num_simulations: Number of simulations to run (default: 2500)
             
         Returns:
             Dictionary containing all simulation results and statistics

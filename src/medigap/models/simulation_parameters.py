@@ -1,5 +1,6 @@
 """Simulation parameters configuration class."""
 
+from datetime import date
 from typing import Optional
 
 
@@ -22,7 +23,7 @@ class SimulationParameters:
         part_b_deductible_growth_rate: float = 0.06,
         percent_sick: float = 0.20,
         simulation_years: int = 25,
-        start_year: int = 2026
+        start_year: int = date.today().year
     ) -> None:
         """Initialize simulation parameters with validation.
         

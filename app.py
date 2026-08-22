@@ -2,6 +2,7 @@
 
 import sys
 import os
+from datetime import date
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
@@ -123,11 +124,12 @@ def create_parameter_inputs() -> SimulationParameters:
         help="Number of years to simulate"
     )
     
+    current_year = date.today().year
     start_year = st.sidebar.number_input(
         "Start Year",
-        min_value=2020,
-        max_value=2030,
-        value=2026,
+        min_value=current_year - 10,
+        max_value=current_year + 10,
+        value=current_year,
         step=1,
         help="Starting year for simulation"
     )
@@ -135,8 +137,8 @@ def create_parameter_inputs() -> SimulationParameters:
     # Number of simulations
     num_simulations = st.sidebar.selectbox(
         "Number of Simulations",
-        options=[100, 500, 1000, 2000, 5000],
-        index=2,
+        options=[100, 500, 1000, 2500, 5000],
+        index=3,
         help="Number of Monte Carlo simulations to run"
     )
     
@@ -315,12 +317,12 @@ def display_simulation_results(results: Dict[str, Any]) -> None:
         results['statistics']['mean_costs'], 
         results['statistics']['std_costs']
     )
-    st.plotly_chart(cost_chart, width='stretch')
+    st.plotly_chart(cost_chart, use_container_width=True)
     
     # Lifetime cost histogram
     st.subheader("📊 Lifetime Cost Distribution")
     hist_chart = create_lifetime_cost_histogram(lifetime_costs)
-    st.plotly_chart(hist_chart, width='stretch')
+    st.plotly_chart(hist_chart, use_container_width=True)
     
     # Percentile analysis
     st.subheader("📊 Cost Percentiles")
@@ -357,7 +359,7 @@ def main():
     params, num_simulations = create_parameter_inputs()
     
     # Run simulation button
-    if st.sidebar.button("🚀 Run Simulation", type="primary"):
+    if st.sidebar.button("🚀 Run Full Simulation", type="primary"):
         with st.spinner(f"Running {num_simulations:,} Monte Carlo simulations..."):
             # Create simulation engine
             simulation = MonteCarloSimulation(params)

@@ -1,5 +1,6 @@
 """Specific Medicare plan implementations."""
 
+from datetime import date
 from .plan import Plan
 
 
@@ -14,7 +15,7 @@ class PlanG(Plan):
         self,
         percent_sick: float = 0.20,
         simulation_years: int = 25,
-        start_year: int = 2026
+        start_year: int = date.today().year
     ) -> None:
         """Initialize Plan G with default parameters.
         
@@ -52,7 +53,7 @@ class PlanHDG(Plan):
         self,
         percent_sick: float = 0.20,
         simulation_years: int = 25,
-        start_year: int = 2026
+        start_year: int = date.today().year
     ) -> None:
         """Initialize Plan HDG with specified parameters.
         
@@ -94,7 +95,7 @@ class PlanN(Plan):
         self,
         percent_sick: float = 0.20,
         simulation_years: int = 25,
-        start_year: int = 2026
+        start_year: int = date.today().year
     ) -> None:
         """Initialize Plan N with specified parameters.
         

@@ -38,7 +38,7 @@ def main() -> None:
     
     # Run comprehensive simulation
     print("Running Monte Carlo simulation...")
-    num_simulations = 1000
+    num_simulations = 2500
     results = simulation.run_comprehensive_simulation(num_simulations)
     
     # Display summary statistics

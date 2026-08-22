@@ -2,6 +2,7 @@
 
 import sys
 import os
+from datetime import date
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
@@ -44,7 +45,7 @@ def create_plan_selection() -> tuple:
         "Number of Simulations",
         min_value=100,
         max_value=10000,
-        value=1000,
+        value=2500,
         step=100,
         help="Number of Monte Carlo simulations to run"
     )
@@ -58,11 +59,12 @@ def create_plan_selection() -> tuple:
         help="Number of years to simulate"
     )
     
+    current_year = date.today().year
     start_year = st.sidebar.number_input(
         "Start Year",
-        min_value=2020,
-        max_value=2030,
-        value=2026,
+        min_value=current_year - 10,
+        max_value=current_year + 10,
+        value=current_year,
         step=1,
         help="Starting year for simulation"
     )
@@ -423,7 +425,11 @@ def main():
         create_cost_comparison_table(plan)
         
         # Run simulation button
-        if st.button("🚀 Run Monte Carlo Simulation", type="primary"):
+        if st.sidebar.button(
+            "🚀 Run Plan Simulatiion",
+            type="primary",
+            width="stretch",
+        ):
             run_simulation_and_display_results(plan, num_simulations)
     
     # Footer
