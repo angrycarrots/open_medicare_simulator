@@ -96,7 +96,8 @@ tbody tr:hover { background: #f6fbfa; }
 .saving { color: #187661; font-weight: 750; }
 .cost { color: #a54841; font-weight: 750; }
 .comparison-note { margin-bottom: 0; color: #698287; font-size: .84rem; line-height: 1.55; }
-.site-footer { max-width: 1440px; margin: 0 auto; padding: 1.5rem 2rem 2.5rem; color: #6b8588; font-size: .78rem; line-height: 1.55; text-align: center; }
+.site-footer { max-width: 1440px; margin: 0 auto; padding: 1.5rem 2rem 2.5rem; color: #6b8588; font-size: .9rem; line-height: 1.55; text-align: center; }
+.copyright-statement { margin-top: .45rem; }
 
 @media (max-width: 1040px) {
   .workspace { grid-template-columns: 280px minmax(0, 1fr); }
