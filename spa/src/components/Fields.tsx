@@ -31,12 +31,18 @@ export function NumberField({ id, label, value, onChange, min, max, step = 1, he
 
 interface RangeFieldProps extends NumberFieldProps {
   format?: (value: number) => string;
+  tooltip?: string;
 }
 
-export function RangeField({ id, label, value, onChange, min = 0, max = 1, step = 0.01, help, format }: RangeFieldProps) {
+export function RangeField({ id, label, value, onChange, min = 0, max = 1, step = 0.01, help, format, tooltip }: RangeFieldProps) {
   return (
     <div className="field range-field">
-      <label htmlFor={id}>{label}</label>
+      <label htmlFor={id}>
+        {label}
+        {tooltip && <span className="tooltip-trigger" tabIndex={0} aria-label={tooltip}>?
+          <span className="tooltip-content" role="tooltip">{tooltip}</span>
+        </span>}
+      </label>
       <div className="range-row">
         <input
           id={id}

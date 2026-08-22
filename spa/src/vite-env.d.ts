@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-declare module "plotly.js-basic-dist-min" {
+declare module "plotly.js-cartesian-dist-min" {
   import type { PlotlyHTMLElement } from "plotly.js";
 
   const Plotly: {

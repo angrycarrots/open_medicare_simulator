@@ -20,8 +20,7 @@ nav { display: flex; flex-wrap: wrap; align-items: flex-start; gap: .35rem; }
 nav a { color: #47666b; border-radius: 99px; padding: .55rem .75rem; font-size: .92rem; font-weight: 650; text-decoration: none; }
 nav a:hover, nav a:focus-visible { color: #0f555d; background: #e0ece9; }
 nav a.active { background: #173d47; color: white; }
-.nav-support { display: grid; justify-items: center; gap: .35rem; }
-nav .coffee-link { display: block; height: 36px; padding: 0; border-radius: 0; line-height: 0; }
+nav .coffee-link { display: block; height: 36px; margin-left: .65rem; padding: 0; border-radius: 0; line-height: 0; }
 nav .coffee-link:hover, nav .coffee-link:focus-visible { background: transparent; }
 .coffee-link img { display: block; height: 36px; border: 0; }
 
@@ -47,9 +46,14 @@ h3 { margin-bottom: 1rem; color: #254d55; font-size: .98rem; }
 .field input:focus, .field select:focus, button:focus-visible, nav a:focus-visible { outline: 3px solid rgba(40, 148, 159, .35); outline-offset: 2px; }
 .field small { color: #708588; font-size: .74rem; font-weight: 500; }
 .range-field { margin-bottom: .1rem; }
+.range-field > label { display: inline-flex; align-items: center; gap: .35rem; }
 .range-row { display: grid; grid-template-columns: minmax(0, 1fr) 3.6rem; align-items: center; gap: .6rem; }
 .range-row input { accent-color: #156b75; width: 100%; }
 .range-row output { color: #0f5963; font-size: .84rem; font-variant-numeric: tabular-nums; text-align: right; }
+.tooltip-trigger { position: relative; display: inline-grid; width: 1.1rem; height: 1.1rem; place-items: center; border: 1px solid #83a5a7; border-radius: 50%; color: #28656d; cursor: help; font-size: .72rem; font-weight: 800; line-height: 1; }
+.tooltip-trigger:focus-visible { outline: 3px solid rgba(40, 148, 159, .35); outline-offset: 2px; }
+.tooltip-content { position: absolute; z-index: 10; bottom: calc(100% + .5rem); left: 50%; width: min(17rem, 72vw); padding: .6rem .7rem; border-radius: .45rem; background: #173d47; color: white; font-size: .76rem; font-weight: 500; line-height: 1.45; opacity: 0; pointer-events: none; transform: translate(-50%, .25rem); transition: opacity .15s ease, transform .15s ease; visibility: hidden; }
+.tooltip-trigger:hover .tooltip-content, .tooltip-trigger:focus .tooltip-content { opacity: 1; transform: translate(-50%, 0); visibility: visible; }
 .primary-button, .secondary-button { border: 0; border-radius: .55rem; padding: .72rem .85rem; font-weight: 800; transition: transform .15s ease, background .15s ease; }
 .primary-button { width: 100%; background: #156b75; color: white; }
 .primary-button:hover:not(:disabled) { background: #0e5963; transform: translateY(-1px); }
@@ -92,7 +96,7 @@ tbody tr:hover { background: #f6fbfa; }
 .saving { color: #187661; font-weight: 750; }
 .cost { color: #a54841; font-weight: 750; }
 .comparison-note { margin-bottom: 0; color: #698287; font-size: .84rem; line-height: 1.55; }
-.site-footer { max-width: 1440px; margin: 0 auto; padding: 1.5rem 2rem 2.5rem; color: #6b8588; font-size: .78rem; line-height: 1.55; }
+.site-footer { max-width: 1440px; margin: 0 auto; padding: 1.5rem 2rem 2.5rem; color: #6b8588; font-size: .78rem; line-height: 1.55; text-align: center; }
 
 @media (max-width: 1040px) {
   .workspace { grid-template-columns: 280px minmax(0, 1fr); }

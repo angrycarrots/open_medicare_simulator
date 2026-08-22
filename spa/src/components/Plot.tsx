@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import type { CSSProperties } from "react";
 import type { PlotlyHTMLElement } from "plotly.js";
-import Plotly from "plotly.js-basic-dist-min";
+import Plotly from "plotly.js-cartesian-dist-min";
 
 interface PlotProps {
   data: unknown[];

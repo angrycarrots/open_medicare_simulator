@@ -39,7 +39,7 @@ export function SinglePlanPage() {
           <h2>Plan and settings</h2>
           <label className="field" htmlFor="plan-choice"><span>Medicare plan</span><select id="plan-choice" value={planChoice} onChange={(event) => setPlanChoice(event.currentTarget.value as PlanChoice)}><option value="plan-g">Plan G</option><option value="plan-hdg">High Deductible Plan G</option><option value="plan-n">Plan N</option><option value="custom">Custom plan</option></select></label>
           <FieldGroup title="Simulation settings">
-            <RangeField id="single-utilization" label="Probability of full utilization" value={percentSick} onChange={setPercentSick} step={0.05} format={percent} />
+            <RangeField id="single-utilization" label="Probability of full utilization" value={percentSick} onChange={setPercentSick} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
             <NumberField id="single-simulations" label="Number of simulations" value={numSimulations} onChange={setNumSimulations} min={100} max={10000} step={100} />
             <NumberField id="single-years" label="Simulation years" value={simulationYears} onChange={setSimulationYears} min={10} max={50} step={5} />
             <NumberField id="single-start" label="Start year" value={startYear} onChange={setStartYear} min={currentYear - 10} max={currentYear + 10} />

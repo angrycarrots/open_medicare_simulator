@@ -49,7 +49,7 @@ export function FullSimulatorPage() {
             <RangeField id="full-part-b-growth" label="Part B deductible" value={parameters.partBDeductibleGrowthRate} onChange={(value) => update("partBDeductibleGrowthRate", value)} max={0.15} format={percent} />
           </FieldGroup>
           <FieldGroup title="Simulation settings">
-            <RangeField id="full-utilization" label="Probability of full utilization" value={parameters.percentSick} onChange={(value) => update("percentSick", value)} step={0.05} format={percent} />
+            <RangeField id="full-utilization" label="Probability of full utilization" value={parameters.percentSick} onChange={(value) => update("percentSick", value)} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
             <NumberField id="full-years" label="Simulation years" value={parameters.simulationYears} onChange={(value) => update("simulationYears", value)} min={5} max={50} step={5} />
             <NumberField id="full-start" label="Start year" value={parameters.startYear} onChange={(value) => update("startYear", value)} min={currentYear - 10} max={currentYear + 10} />
             <label className="field" htmlFor="full-simulations"><span>Number of simulations</span><select id="full-simulations" value={numSimulations} onChange={(event) => setNumSimulations(Number(event.currentTarget.value))}>{simulationChoices.map((value) => <option key={value} value={value}>{value.toLocaleString()}</option>)}</select></label>

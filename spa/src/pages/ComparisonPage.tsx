@@ -40,7 +40,7 @@ export function ComparisonPage() {
         <label className="field" htmlFor="first-plan"><span>Plan 1</span><PlanSelect id="first-plan" value={firstChoice} onChange={setFirstChoice} /></label>
         <label className="field" htmlFor="second-plan"><span>Plan 2</span><PlanSelect id="second-plan" value={secondChoice} onChange={setSecondChoice} /></label>
         <FieldGroup title="Shared simulation settings">
-          <RangeField id="comparison-utilization" label="Probability of full utilization" value={percentSick} onChange={setPercentSick} step={0.05} format={percent} />
+          <RangeField id="comparison-utilization" label="Probability of full utilization" value={percentSick} onChange={setPercentSick} step={0.05} format={percent} tooltip="This is the estimated percentage that you use the plan. How you use the plan impacts copays and other costs." />
           <NumberField id="comparison-simulations" label="Number of simulations" value={numSimulations} onChange={setNumSimulations} min={100} max={10000} step={100} />
           <NumberField id="comparison-years" label="Simulation years" value={simulationYears} onChange={setSimulationYears} min={10} max={50} step={5} />
           <NumberField id="comparison-start" label="Start year" value={startYear} onChange={setStartYear} min={currentYear - 10} max={currentYear + 10} />
