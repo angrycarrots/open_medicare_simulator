@@ -121,7 +121,8 @@ function PlanCostFields({ planId, settings, update }: { planId: PredefinedPlanCh
   return <FieldGroup title="Plan parameters">
     <NumberField id={`${planId}-premium`} label="Monthly premium" value={settings.monthlyPremium} onChange={(value) => update("monthlyPremium", value)} min={1} max={1000} step={1} />
     <NumberField id={`${planId}-deductible`} label="Plan deductible (annual)" value={settings.planDeductible} onChange={(value) => update("planDeductible", value)} min={0} max={10000} step={1} />
-    <NumberField id={`${planId}-office-copay`} label="Office visit copay" value={settings.officeVisitCopay} onChange={(value) => update("officeVisitCopay", value)} min={0} max={500} step={1} help="Applied to the plan's assumed 12 office visits per year." />
+    <NumberField id={`${planId}-office-copay`} label="Office visit copay" value={settings.officeVisitCopay} onChange={(value) => update("officeVisitCopay", value)} min={0} max={500} step={1} />
+    <RangeField id={`${planId}-office-visits`} label="Number of office visits" value={settings.officeVisitsPerYear} onChange={(value) => update("officeVisitsPerYear", value)} min={1} max={26} step={1} format={(value) => value.toFixed(0)} />
   </FieldGroup>;
 }
 
@@ -129,6 +130,7 @@ function PlanGrowthFields({ planId, settings, update }: { planId: PredefinedPlan
   return <FieldGroup title="Annual growth rates">
     <RangeField id={`${planId}-premium-growth`} label="Plan premium" value={settings.planPremiumGrowthRate} onChange={(value) => update("planPremiumGrowthRate", value)} max={0.2} format={percent} />
     <RangeField id={`${planId}-deductible-growth`} label="Plan deductible" value={settings.planDeductibleGrowthRate} onChange={(value) => update("planDeductibleGrowthRate", value)} max={0.2} format={percent} />
+    <RangeField id={`${planId}-copay-growth`} label="Copay growth rate" value={settings.officeVisitCopayGrowthRate} onChange={(value) => update("officeVisitCopayGrowthRate", value)} max={0.2} format={percent} />
   </FieldGroup>;
 }
 

@@ -9,6 +9,8 @@ export interface PlanCostSettings {
   monthlyPremium: number;
   planDeductible: number;
   officeVisitCopay: number;
+  officeVisitsPerYear: number;
+  officeVisitCopayGrowthRate: number;
   planPremiumGrowthRate: number;
   planDeductibleGrowthRate: number;
 }
@@ -66,9 +68,9 @@ export function createPlanG(overrides: Partial<PlanDefinition> = {}): PlanDefini
     percentSick: 0.2,
     simulationYears: 25,
     startYear: CURRENT_YEAR,
-    specialistVisitsPerYear: 12,
+    specialistVisitsPerYear: 4,
     specialistCopay2026: 0,
-    specialistCopayGrowthRate: 0.07,
+    specialistCopayGrowthRate: 0.06,
     ...overrides,
   };
 }
@@ -92,9 +94,9 @@ export function createPlanN(overrides: Partial<PlanDefinition> = {}): PlanDefini
     name: "Plan N",
     premium2026: 122,
     planDeductible2026: 0,
-    specialistVisitsPerYear: 12,
+    specialistVisitsPerYear: 4,
     specialistCopay2026: 20,
-    specialistCopayGrowthRate: 0.07,
+    specialistCopayGrowthRate: 0.06,
     ...overrides,
   };
 }
@@ -115,6 +117,8 @@ function costSettings(plan: PlanDefinition): PlanCostSettings {
     monthlyPremium: plan.premium2026,
     planDeductible: plan.planDeductible2026,
     officeVisitCopay: plan.specialistCopay2026 ?? 20,
+    officeVisitsPerYear: plan.specialistVisitsPerYear ?? 4,
+    officeVisitCopayGrowthRate: plan.specialistCopayGrowthRate ?? 0.06,
     planPremiumGrowthRate: plan.premiumGrowthRate,
     planDeductibleGrowthRate: plan.planDeductibleGrowthRate,
   };
@@ -147,9 +151,9 @@ export function withPlanCostSettings(plan: PlanDefinition, settings: PlanCostSet
     premiumGrowthRate: settings.planPremiumGrowthRate,
     planDeductible2026: settings.planDeductible,
     planDeductibleGrowthRate: settings.planDeductibleGrowthRate,
-    specialistVisitsPerYear: plan.specialistVisitsPerYear ?? 12,
+    specialistVisitsPerYear: settings.officeVisitsPerYear,
     specialistCopay2026: settings.officeVisitCopay,
-    specialistCopayGrowthRate: plan.specialistCopayGrowthRate ?? plan.premiumGrowthRate,
+    specialistCopayGrowthRate: settings.officeVisitCopayGrowthRate,
   };
 }
 

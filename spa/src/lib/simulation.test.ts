@@ -14,6 +14,8 @@ describe("Medicare plan cost engine", () => {
     expect([planHDG.premium2026, planHDG.planDeductible2026]).toEqual([70, 2875]);
     expect([planN.premium2026, planN.planDeductible2026]).toEqual([122, 0]);
     expect([planG.specialistCopay2026, planHDG.specialistCopay2026, planN.specialistCopay2026]).toEqual([0, 30, 20]);
+    expect([planG.specialistVisitsPerYear, planHDG.specialistVisitsPerYear, planN.specialistVisitsPerYear]).toEqual([4, 4, 4]);
+    expect([planG.specialistCopayGrowthRate, planHDG.specialistCopayGrowthRate, planN.specialistCopayGrowthRate]).toEqual([0.06, 0.06, 0.06]);
   });
 
   it("repairs missing growth rates in previously saved plan settings", () => {
@@ -24,6 +26,8 @@ describe("Medicare plan cost engine", () => {
     expect(settings["plan-g"].monthlyPremium).toBe(165);
     expect(settings["plan-g"].planPremiumGrowthRate).toBe(0.07);
     expect(settings["plan-g"].planDeductibleGrowthRate).toBe(0.06);
+    expect(settings["plan-g"].officeVisitsPerYear).toBe(4);
+    expect(settings["plan-g"].officeVisitCopayGrowthRate).toBe(0.06);
     expect(settings["plan-hdg"].planPremiumGrowthRate).toBe(0.07);
     expect(settings["plan-n"].planDeductibleGrowthRate).toBe(0.06);
   });
@@ -39,6 +43,8 @@ describe("Medicare plan cost engine", () => {
       monthlyPremium: 175,
       planDeductible: 300,
       officeVisitCopay: 25,
+      officeVisitsPerYear: 4,
+      officeVisitCopayGrowthRate: 0.06,
       planPremiumGrowthRate: 0.08,
       planDeductibleGrowthRate: 0.05,
     });
@@ -47,16 +53,16 @@ describe("Medicare plan cost engine", () => {
     expect(plan.specialistCopay2026).toBe(25);
     expect(plan.premiumGrowthRate).toBe(0.08);
     expect(plan.planDeductibleGrowthRate).toBe(0.05);
-    expect(annualCost(plan, 0, false)).toBe(2988);
-    expect(annualCost(plan, 0, true)).toBe(3571);
-    expect(annualCost(withoutPartD(plan), 1, false)).toBeCloseTo(2589);
-    expect(annualCost(withoutPartD(plan), 1, true)).toBeCloseTo(3203.98);
+    expect(annualCost(plan, 0, false)).toBe(2788);
+    expect(annualCost(plan, 0, true)).toBe(3371);
+    expect(annualCost(withoutPartD(plan), 1, false)).toBeCloseTo(2374);
+    expect(annualCost(withoutPartD(plan), 1, true)).toBeCloseTo(2988.98);
   });
 
   it("includes Plan N specialist copays in healthy and full-utilization costs", () => {
     const plan = createPlanN({ startYear: 2026 });
-    expect(annualCost(plan, 0, false)).toBe(2292);
-    expect(annualCost(plan, 0, true)).toBe(2575);
+    expect(annualCost(plan, 0, false)).toBe(2132);
+    expect(annualCost(plan, 0, true)).toBe(2415);
   });
 
   it("can exclude Part D costs from single-plan and comparison scenarios", () => {
