@@ -98,6 +98,9 @@ tbody tr:hover { background: #f6fbfa; }
 .cost { color: #a54841; font-weight: 750; }
 .comparison-note { margin-bottom: 0; color: #698287; font-size: .84rem; line-height: 1.55; }
 .site-footer { max-width: 1440px; margin: 0 auto; padding: 1.5rem 2rem 2.5rem; color: #6b8588; font-size: .9rem; line-height: 1.55; text-align: center; }
+.discord-button { display: inline-block; margin-bottom: 1rem; border-radius: .55rem; padding: .72rem 1rem; background: #5865f2; color: white; font-weight: 800; text-decoration: none; transition: transform .15s ease, background .15s ease; }
+.discord-button:hover { background: #4752c4; transform: translateY(-1px); }
+.discord-button:focus-visible { outline: 3px solid rgba(88, 101, 242, .35); outline-offset: 3px; }
 .copyright-statement { margin-top: .45rem; }
 
 @media (max-width: 1040px) {

@@ -42,7 +42,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/full" replace />} />
         </Routes>
         <footer className="site-footer">
-          <div>This simulator is for educational and planning purposes only. This site uses Google Analytics to collect usage information.</div>
+          <a className="discord-button" href="https://discord.gg/F5ZWXpGb3" target="_blank" rel="noopener noreferrer">Questions / Comments / Suggestions? Let's talk on Discord</a>
+          <div>This simulator is for educational and planning purposes only. This site uses Google Analytics to collect usage information. No other information is collected</div>
           <div className="copyright-statement">© {new Date().getFullYear()} VAST SCIENTIFIC.</div>
         </footer>
       </div>
