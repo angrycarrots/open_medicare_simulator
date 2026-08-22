@@ -37,7 +37,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/full" replace />} />
         </Routes>
         <footer className="site-footer">
-          <div>This simulator is for educational and planning purposes only. This site is 100% private - no data is collected.</div>
+          <div>This simulator is for educational and planning purposes only. This site uses Google Analytics to collect usage information.</div>
           <div className="copyright-statement">© {new Date().getFullYear()} VAST SCIENTIFIC.</div>
         </footer>
       </div>
